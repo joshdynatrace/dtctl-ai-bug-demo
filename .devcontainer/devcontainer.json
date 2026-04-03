@@ -42,7 +42,8 @@
 	// from 2 cores, 8 GB RAM, and 32 GB storage
 	// up to 32 cores, 64 GB RAM, and 128 GB storage.
 	"hostRequirements": {
-		"cpus": 2
+		"cpus": 4,
+		"memory": "16gb"
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
