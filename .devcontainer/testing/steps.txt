@@ -1,0 +1,5 @@
+// TODO: You need to complete this file
+// With the snippet names (from your markdown files)
+// One test step per line, in the order you want them executed (top to bottom)
+// You can comment out steps with either // or #
+// You should also include a UI test that is based on Playwright (eg. test_dynatrace_ui.py)

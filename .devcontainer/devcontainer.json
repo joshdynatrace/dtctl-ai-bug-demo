@@ -1,0 +1,70 @@
+// For format details, see https://containers.dev/implementors/json_reference/. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/kubernetes-helm
+{
+	"name": "PLACEHOLDER",
+	"dockerFile": "Dockerfile",
+	// alternatively, prebuild an image and uncomment the following line instead
+	//"image": "userA/example:latest",
+
+	// do not change these if you want Docker in Docker support
+	"runArgs": ["--init", "--privileged", "--network=host"],
+	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind" ],
+	"overrideCommand": false,
+
+	// some base images require a specific user name
+	"remoteUser": "vscode",
+
+	// Install extensions
+	"customizations": {
+		"vscode": {	
+			// Set container specific settings
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "zsh"
+			},			
+			"extensions": []
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		8080
+	],
+
+	// add labels
+	"portsAttributes": {
+		"8080": { "label": "Placeholder" }
+	},
+
+	// GitHub allows partial declaration here
+	// ie. 2 CPUs assumes certain RAM + disk configurations
+	// Each codespace you create is hosted by GitHub in a Docker container, running on a virtual machine.
+	// You can choose from a selection of virtual machine types:
+	// from 2 cores, 8 GB RAM, and 32 GB storage
+	// up to 32 cores, 64 GB RAM, and 128 GB storage.
+	"hostRequirements": {
+		"cpus": 2
+	},
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// eg. ./init.sh or python installer.py
+	// Other hooks are also available: https://containers.dev/implementors/json_reference/#lifecycle-scripts
+	"postCreateCommand": "pip install -r /workspaces/$RepositoryName/.devcontainer/requirements.txt --break-system-packages && python3 /workspaces/$RepositoryName/environment_installer.py",
+
+	// Add recommended secrets
+	// !! Currently no way to make these mandatory !!
+	// Make sure your startup scripts defend against empty values
+	"secrets": {
+	 	  "DT_ENVIRONMENT_ID": {
+	            "description": "eg. abc12345 from https://abc12345.live.dynatrace.com"
+		},
+		  "DT_ENVIRONMENT_TYPE": {
+			"description": "eg. live, sprint or dev. If unsure, use live."
+		},
+		  "DT_API_TOKEN": {
+	    	    "description": "Dynatrace API token with these permissions: `metrics.ingest`, `logs.ingest`, `openTelemetryTrace.ingest`, `events.ingest`"
+		},
+		  "PLACEHOLDER": {
+		    "description": "You can add new secrets if you need. Delete if not required."
+		  }
+	}
+}
