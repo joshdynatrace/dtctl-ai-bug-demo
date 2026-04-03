@@ -62,9 +62,6 @@
 		},
 		  "DT_API_TOKEN": {
 	    	    "description": "Dynatrace API token with these permissions: `metrics.ingest`, `logs.ingest`, `openTelemetryTrace.ingest`, `events.ingest`"
-		},
-		  "PLACEHOLDER": {
-		    "description": "You can add new secrets if you need. Delete if not required."
-		  }
+		}
 	}
 }
