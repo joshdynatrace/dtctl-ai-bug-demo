@@ -14,7 +14,7 @@ RUN chmod +x /tmp/scripts/docker.sh
 # update the container
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install zsh ca-certificates gnupg jq gh -y && \
+    apt-get install zsh ca-certificates gnupg jq gh gettext-base -y && \
     apt-get autoremove -y && \
     apt-get clean -y
 

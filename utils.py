@@ -23,6 +23,7 @@ SSO_TOKEN_URL_DEV = "https://sso-dev.dynatracelabs.com/sso/oauth2/token"
 SSO_TOKEN_URL_SPRINT = "https://sso-sprint.dynatracelabs.com/sso/oauth2/token"
 SSO_TOKEN_URL_LIVE = "https://sso.dynatrace.com/sso/oauth2/token"
 DT_API_TOKEN = os.environ.get("DT_API_TOKEN")
+DT_DATA_INGEST_TOKEN = os.environ.get("DT_DATA_INGEST_TOKEN")
 DT_ENVIRONMENT_ID = os.environ.get("DT_ENVIRONMENT_ID") # abc12345
 DT_ENVIRONMENT_TYPE = os.environ.get("DT_ENVIRONMENT_TYPE", "live") # dev, sprint" or "live"
 
@@ -379,3 +380,38 @@ def send_startup_ping(demo_name=""):
         headers=headers,
         json=body
     )
+
+
+def install_dynatrace_oneagent(dt_tenant_live):
+    required_env_vars = ["DT_API_TOKEN", "DT_DATA_INGEST_TOKEN"]
+    missing_vars = [var_name for var_name in required_env_vars if not os.environ.get(var_name)]
+    if missing_vars:
+        exit(f"Required variables are missing for Dynatrace OneAgent install: {', '.join(missing_vars)}")
+
+    # Needed so envsubst can replace ${DT_URL} in dynakube.yaml.
+    os.environ["DT_URL"] = dt_tenant_live
+
+    run_command([
+        "helm", "upgrade", "--install", "dynatrace-operator",
+        "oci://public.ecr.aws/dynatrace/dynatrace-operator",
+        "--create-namespace",
+        "--namespace", "dynatrace",
+        "--atomic"
+    ])
+
+    dynakube_apply = subprocess.run(
+        ["bash", "-lc", "envsubst '${DT_URL} ${DT_API_TOKEN} ${DT_DATA_INGEST_TOKEN}' < dynakube.yaml | kubectl apply -f -"],
+        capture_output=True,
+        text=True,
+        encoding="UTF8",
+    )
+
+    if dynakube_apply.stdout:
+        logger.info(dynakube_apply.stdout)
+
+    if dynakube_apply.returncode > 0:
+        exit(
+            "Failed to apply dynakube.yaml with envsubst. "
+            f"Return Code: {dynakube_apply.returncode}. "
+            f"Error: {dynakube_apply.stderr}."
+        )

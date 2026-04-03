@@ -27,12 +27,12 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		8080
+		5173
 	],
 
 	// add labels
 	"portsAttributes": {
-		"8080": { "label": "Placeholder" }
+		"5173": { "label": "Arc Store" }
 	},
 
 	// GitHub allows partial declaration here
@@ -61,7 +61,10 @@
 			"description": "eg. live, sprint or dev. If unsure, use live."
 		},
 		  "DT_API_TOKEN": {
-	    	    "description": "Dynatrace API token with these permissions: `metrics.ingest`, `logs.ingest`, `openTelemetryTrace.ingest`, `events.ingest`"
+	    	    "description": "The Operator token (former API token) is used by the Dynatrace Operator to manage settings and the lifecycle of all Dynatrace components in the Kubernetes cluster"
+		},
+		  "DT_DATA_INGEST_TOKEN": {
+	    	    "description": "The data ingest token is used to enrich and send additional observability signals - logs, metrics, and traces scope"
 		}
 	}
 }

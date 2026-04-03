@@ -6,6 +6,28 @@ Use this template to bootstrap your Kubernetes-based hands on cloud environment.
 
 Includes a documentation stack (mkdocs) in the `docs` folder and full end-to-end testing suite.
 
+## Dynatrace OneAgent Installation During Setup
+
+The post-create bootstrap always installs the Dynatrace Operator and applies `dynakube.yaml` automatically.
+
+Setup performs:
+
+```bash
+helm upgrade --install dynatrace-operator oci://public.ecr.aws/dynatrace/dynatrace-operator \
+  --create-namespace \
+  --namespace dynatrace \
+  --atomic
+
+envsubst < dynakube.yaml | kubectl apply -f -
+```
+
+Required environment variables:
+
+- `DT_ENVIRONMENT_ID`
+- `DT_ENVIRONMENT_TYPE`
+- `DT_API_TOKEN`
+- `DT_DATA_INGEST_TOKEN`
+
 ## Installing docstack
 
 ```
