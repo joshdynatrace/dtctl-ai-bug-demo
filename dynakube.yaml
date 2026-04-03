@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
-  apiToken: ${DT_API_TOKEN}
-  dataIngestToken: ${DT_DATA_INGEST_TOKEN}
+  apiToken: ${DT_API_TOKEN_B64}
+  dataIngestToken: ${DT_DATA_INGEST_TOKEN_B64}
 kind: Secret
 metadata:
   name: dtctl-ai-demo
@@ -73,6 +73,7 @@ spec:
     capabilities:
       - routing
       - debugging
+      - kubernetes-monitoring
     resources:
       requests:
         cpu: 500m

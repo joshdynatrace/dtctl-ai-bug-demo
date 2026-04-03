@@ -6,6 +6,7 @@ import time
 import os
 import json
 import hashlib
+import base64
 from loguru import logger
 
 REPOSITORY_NAME = os.environ.get("RepositoryName", "")
@@ -390,6 +391,8 @@ def install_dynatrace_oneagent(dt_tenant_live):
 
     # Needed so envsubst can replace ${DT_URL} in dynakube.yaml.
     os.environ["DT_URL"] = dt_tenant_live
+    os.environ["DT_API_TOKEN_B64"] = base64.b64encode(os.environ["DT_API_TOKEN"].encode("utf-8")).decode("utf-8")
+    os.environ["DT_DATA_INGEST_TOKEN_B64"] = base64.b64encode(os.environ["DT_DATA_INGEST_TOKEN"].encode("utf-8")).decode("utf-8")
 
     run_command([
         "helm", "upgrade", "--install", "dynatrace-operator",
@@ -400,7 +403,7 @@ def install_dynatrace_oneagent(dt_tenant_live):
     ])
 
     dynakube_apply = subprocess.run(
-        ["bash", "-lc", "envsubst '${DT_URL} ${DT_API_TOKEN} ${DT_DATA_INGEST_TOKEN}' < dynakube.yaml | kubectl apply -f -"],
+        ["bash", "-lc", "envsubst '${DT_URL} ${DT_API_TOKEN_B64} ${DT_DATA_INGEST_TOKEN_B64}' < dynakube.yaml | kubectl apply -f -"],
         capture_output=True,
         text=True,
         encoding="UTF8",
