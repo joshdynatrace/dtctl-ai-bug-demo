@@ -10,6 +10,9 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
+  extraMounts:
+  - hostPath: /
+    containerPath: /mnt/root
   extraPortMappings:
   - hostPort: 8080
     containerPort: 8080

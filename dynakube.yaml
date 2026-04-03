@@ -23,6 +23,7 @@ metadata:
 spec:
   apiUrl: ${DT_URL}/api
   tokens: dtctl-ai-demo
+  skipCertCheck: true
   activeGate:
     capabilities:
       - kubernetes-monitoring
@@ -58,6 +59,7 @@ metadata:
 spec:
   apiUrl: ${DT_URL}/api
   tokens: dtctl-ai-demo
+  skipCertCheck: true
   metadataEnrichment:
     enabled: true
   oneAgent:
