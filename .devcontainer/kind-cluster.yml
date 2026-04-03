@@ -18,3 +18,5 @@ nodes:
     containerPort: 4317
   - hostPort: 4318
     containerPort: 4318
+  - hostPort: 5173
+    containerPort: 5173

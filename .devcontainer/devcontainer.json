@@ -1,7 +1,7 @@
 // For format details, see https://containers.dev/implementors/json_reference/. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/kubernetes-helm
 {
-	"name": "PLACEHOLDER",
+	"name": "DTCTL AI DEBUGGING DEMO",
 	"dockerFile": "Dockerfile",
 	// alternatively, prebuild an image and uncomment the following line instead
 	//"image": "userA/example:latest",
@@ -27,7 +27,8 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		5173
+		5173,
+		8080
 	],
 
 	// add labels
