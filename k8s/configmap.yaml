@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arc-store-config
+  namespace: arc-store
+data:
+  APP_NAME: "Arc Store"
+  BACKEND_URL: "http://arc-backend:8080"
+  TAX_SERVICE_URL: "http://tax-service.tax-service.svc.cluster.local:8081"

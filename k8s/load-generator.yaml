@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arc-load-generator
+  namespace: arc-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arc-load-generator
+  template:
+    metadata:
+      labels:
+        app: arc-load-generator
+    spec:
+      containers:
+        - name: arc-load-generator
+          image: arc-load-generator:latest
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: arc-store-config
+          env:
+            - name: DELAY_SECONDS
+              value: "5"

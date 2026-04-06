@@ -27,12 +27,14 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
+		3000,
 		5173,
 		8080
 	],
 
 	// add labels
 	"portsAttributes": {
+		"3000": { "label": "Arc Store (K8s)" },
 		"5173": { "label": "Arc Store" }
 	},
 
