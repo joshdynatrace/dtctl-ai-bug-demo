@@ -35,6 +35,7 @@ run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/frontend.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/ingress.yaml"])
 
 # Wait for deployments to become available
+print("Waiting for deployments to become available...")
 run_command(["kubectl", "wait", "deployment/arc-backend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 run_command(["kubectl", "wait", "deployment/arc-frontend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 
