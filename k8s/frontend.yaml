@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: arc-frontend
-          image: arc-frontend:latest
-          imagePullPolicy: Never
+          image: jhendrick/arc-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 ---

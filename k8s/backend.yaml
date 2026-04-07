@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: arc-backend
-          image: arc-backend:latest
-          imagePullPolicy: Never
+          image: jhendrick/arc-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:

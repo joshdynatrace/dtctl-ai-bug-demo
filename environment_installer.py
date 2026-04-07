@@ -27,6 +27,17 @@ dotenv.set_key(dotenv_path=".env", key_to_set="DT_URL", value_to_set=DT_TENANT_L
 subprocess.run(["kind", "create", "cluster", "--config", ".devcontainer/kind-cluster.yml", "--wait", STANDARD_TIMEOUT])
 install_dynatrace_oneagent(dt_tenant_live=DT_TENANT_LIVE)
 
+# Deploy frontend and backend to the cluster
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/namespace.yaml"])
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/configmap.yaml"])
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/backend.yaml"])
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/frontend.yaml"])
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/ingress.yaml"])
+
+# Wait for deployments to become available
+run_command(["kubectl", "wait", "deployment/arc-backend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
+run_command(["kubectl", "wait", "deployment/arc-frontend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
+
 if CODESPACE_NAME.startswith("dttest-"):
     run_command(["pip", "install", "-r", f"/workspaces/{REPOSITORY_NAME}/.devcontainer/testing/requirements.txt", "--break-system-packages"])
     run_command(["python",  f"/workspaces/{REPOSITORY_NAME}/.devcontainer/testing/testharness.py"])
