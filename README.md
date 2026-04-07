@@ -48,10 +48,10 @@ kubectl get pods -n arc-store -w
 
 ```bash
 # Store UI
-kubectl port-forward svc/arc-frontend 3000:80 -n arc-store
+nohup kubectl port-forward svc/arc-frontend 3000:80 -n arc-store > /tmp/arc-frontend-port-forward.log 2>&1 &
 
 # Backend API (direct)
-kubectl port-forward svc/arc-backend 8080:8080 -n arc-store
+nohup kubectl port-forward svc/arc-backend 8080:8080 -n arc-store > /tmp/arc-backend-port-forward.log 2>&1 &
 ```
 
 Open http://localhost:3000

@@ -25,6 +25,7 @@ dotenv.set_key(dotenv_path=".env", key_to_set="DT_APPS_URL", value_to_set=DT_TEN
 dotenv.set_key(dotenv_path=".env", key_to_set="DT_URL", value_to_set=DT_TENANT_LIVE, export=True)
 
 subprocess.run(["kind", "create", "cluster", "--config", ".devcontainer/kind-cluster.yml", "--wait", STANDARD_TIMEOUT])
+print("Installing the Dynatrace Operator...")
 install_dynatrace_oneagent(dt_tenant_live=DT_TENANT_LIVE)
 
 # Deploy frontend and backend to the cluster

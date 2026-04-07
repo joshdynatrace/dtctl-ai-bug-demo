@@ -28,14 +28,12 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		3000,
-		5173,
 		8080
 	],
 
 	// add labels
 	"portsAttributes": {
 		"3000": { "label": "Arc Store (K8s)" },
-		"5173": { "label": "Arc Store" }
 	},
 
 	// GitHub allows partial declaration here
@@ -53,7 +51,6 @@
 	// eg. ./init.sh or python installer.py
 	// Other hooks are also available: https://containers.dev/implementors/json_reference/#lifecycle-scripts
 	"postCreateCommand": "pip install -r /workspaces/$RepositoryName/.devcontainer/requirements.txt --break-system-packages && python3 /workspaces/$RepositoryName/environment_installer.py",
-	"postStartCommand": "bash /workspaces/$RepositoryName/.devcontainer/start-port-forward.sh",
 
 	// Add recommended secrets
 	// !! Currently no way to make these mandatory !!
