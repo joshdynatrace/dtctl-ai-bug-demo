@@ -29,6 +29,14 @@ print("Installing the Dynatrace Operator...")
 install_dynatrace_oneagent(dt_tenant_live=DT_TENANT_LIVE)
 
 # Deploy frontend and backend to the cluster
+
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/tax-namespace.yaml"])
+
+
+# Deploy and wait for the tax service before starting backend/frontend
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/tax-service.yaml"])
+run_command(["kubectl", "wait", "deployment/tax-service", "-n", "tax-service", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
+
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/namespace.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/configmap.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/backend.yaml"])
