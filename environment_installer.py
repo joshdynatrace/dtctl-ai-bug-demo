@@ -28,15 +28,15 @@ subprocess.run(["kind", "create", "cluster", "--config", ".devcontainer/kind-clu
 print("Installing the Dynatrace Operator...")
 install_dynatrace_oneagent(dt_tenant_live=DT_TENANT_LIVE)
 
-# Deploy frontend and backend to the cluster
-
+# Deploy the tax service to the cluster
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/tax-namespace.yaml"])
-
-
-# Deploy and wait for the tax service before starting backend/frontend
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/tax-service.yaml"])
+
+# Wait for the tax service before starting backend/frontend
+print("Waiting for tax service deployments to become available...")
 run_command(["kubectl", "wait", "deployment/tax-service", "-n", "tax-service", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 
+# Deploy frontend and backend to the cluster
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/namespace.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/configmap.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/backend.yaml"])
@@ -44,7 +44,7 @@ run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/frontend.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/ingress.yaml"])
 
 # Wait for deployments to become available
-print("Waiting for deployments to become available...")
+print("Waiting for front end & backend deployments to become available...")
 run_command(["kubectl", "wait", "deployment/arc-backend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 run_command(["kubectl", "wait", "deployment/arc-frontend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 
