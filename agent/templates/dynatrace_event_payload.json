@@ -1,0 +1,16 @@
+{
+  "eventType": "CUSTOM_INFO",
+  "title": "AI investigation update for Problem P-000000",
+  "timeoutMinutes": 60,
+  "properties": {
+    "source": "github-agent-demo",
+    "status": "pr_opened",
+    "problem.id": "P-000000",
+    "dt.problem.id": "P-000000",
+    "github.issue": "https://github.com/OWNER/REPO/issues/0",
+    "pr.url": "https://github.com/OWNER/REPO/pull/0",
+    "root.cause": "TaxRateResponse.getTaxRate() returned null and was dereferenced.",
+    "confidence": "0.92",
+    "service": "arc-backend"
+  }
+}
