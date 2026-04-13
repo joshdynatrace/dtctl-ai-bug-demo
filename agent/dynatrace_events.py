@@ -13,11 +13,11 @@ def _safe_text(value, max_len=1800):
 
 
 def _resolve_dynatrace_env():
-    return os.getenv("DTCTL_ENVIRONMENT") or os.getenv("DT_ENV_URL")
+    return os.getenv("DT_ENVIRONMENT")
 
 
 def _resolve_dynatrace_token():
-    return os.getenv("DTCTL_TOKEN") or os.getenv("DT_API_TOKEN")
+    return os.getenv("DT_API_TOKEN")
 
 
 def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):

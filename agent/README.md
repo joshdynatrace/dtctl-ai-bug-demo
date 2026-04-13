@@ -45,7 +45,7 @@ This repo workflow already sets that variable so `dtctl` can auto-switch behavio
 
 Set these repository secrets:
 
-- `DT_ENV_URL`
+- `DT_ENVIRONMENT`
   - Example: `https://abc12345.apps.dynatrace.com`
 - `DT_API_TOKEN`
   - Dynatrace API token with scopes required by your dtctl commands and Events API usage.
@@ -71,8 +71,8 @@ Also set these secrets/vars for `agent/claude_runner.py`:
 
 Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 
-- `DTCTL_ENVIRONMENT`
-- `DTCTL_TOKEN`
+- `DT_ENVIRONMENT`
+- `DT_API_TOKEN`
 - `DTCTL_USE_AGENT_MODE=auto`
 - `CLAUDECODE=1`
 - `INVESTIGATION_AGENT=claudecode`
@@ -175,8 +175,8 @@ These are uploaded by the workflow as an artifact.
 To run locally, set required env vars and point `GITHUB_EVENT_PATH` to a sample issue event payload JSON:
 
 ```bash
-export DTCTL_ENVIRONMENT="https://abc12345.apps.dynatrace.com"
-export DTCTL_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
+export DT_ENVIRONMENT="https://abc12345.apps.dynatrace.com"
+export DT_API_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
 export GITHUB_TOKEN="ghp_xxx"
 export GITHUB_REPOSITORY="owner/repo"
 export GITHUB_EVENT_PATH="/path/to/issue-event.json"
@@ -191,7 +191,7 @@ python agent/orchestrator.py
 - Problem ID not found
   - Ensure issue body includes `Problem: P-123456`.
 - dtctl auth errors
-  - Verify `DTCTL_ENVIRONMENT` and `DTCTL_TOKEN` values.
+  - Verify `DT_ENVIRONMENT` and `DT_API_TOKEN` values.
 - Claude command not running
   - Ensure `CLAUDECODE_INVESTIGATE_CMD` is set and executable on the runner.
 - Non-JSON Claude output

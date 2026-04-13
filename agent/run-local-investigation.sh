@@ -8,8 +8,8 @@ set -e  # Exit on error
 # ============================================================================
 
 GITHUB_TOKEN="your-github-token-here"
-DTCTL_ENVIRONMENT="your-dt-environment-url"  # e.g., https://xxx.apps.dynatrace.com
-DTCTL_TOKEN="your-dt-api-token"
+DT_ENVIRONMENT="your-dt-environment-url"  # e.g., https://xxx.apps.dynatrace.com
+DT_API_TOKEN="your-dt-api-token"
 ANTHROPIC_API_KEY="your-anthropic-api-key"
 
 # ============================================================================
@@ -38,14 +38,14 @@ export GITHUB_REPOSITORY="joshDynatrace/dtctl-ai-bug-demo"
 export GITHUB_TOKEN="$GITHUB_TOKEN"
 export GITHUB_RUN_ID="local-dry-run-$(date +%s)"
 export GITHUB_SHA="local-test"
-export DTCTL_ENVIRONMENT="$DTCTL_ENVIRONMENT"
-export DTCTL_TOKEN="$DTCTL_TOKEN"
+export DT_ENVIRONMENT="$DT_ENVIRONMENT"
+export DT_API_TOKEN="$DT_API_TOKEN"
 export DTCTL_CONTEXT="demo"
 export DTCTL_USE_AGENT_MODE="auto"
 export CLAUDECODE="1"
 export INVESTIGATION_AGENT="claudecode"
 export ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
-export CLAUDECODE_INVESTIGATE_CMD="python agent/claude_runner.py {prompt_file}"
+export CLAUDECODE_INVESTIGATE_CMD="python claude_runner.py {prompt_file}"
 export PYTHONUNBUFFERED="1"
 
 # ============================================================================
@@ -60,13 +60,13 @@ if [ "$GITHUB_TOKEN" = "your-github-token-here" ]; then
   exit 1
 fi
 
-if [ "$DTCTL_ENVIRONMENT" = "your-dt-environment-url" ]; then
-  echo "❌ Error: DTCTL_ENVIRONMENT not configured"
+if [ "$DT_ENVIRONMENT" = "your-dt-environment-url" ]; then
+  echo "Error: DT_ENVIRONMENT not configured"
   exit 1
 fi
 
-if [ "$DTCTL_TOKEN" = "your-dt-api-token" ]; then
-  echo "❌ Error: DTCTL_TOKEN not configured"
+if [ "$DT_API_TOKEN" = "your-dt-api-token" ]; then
+  echo "Error: DT_API_TOKEN not configured"
   exit 1
 fi
 
@@ -86,7 +86,7 @@ echo "Running orchestrator..."
 echo ""
 
 cd "$(dirname "$0")"
-python agent/orchestrator.py
+python orchestrator.py
 
 # ============================================================================
 # Results
@@ -97,8 +97,8 @@ echo "==========================================================================
 echo "Investigation complete!"
 echo ""
 echo "Check the following for results:"
-echo "  - agent/output/           - All investigation artifacts"
-echo "  - agent/output/model_output.json - Claude's raw investigation"
-echo "  - agent/output/github_comment.json - Comment that would post to GitHub"
-echo "  - agent/output/dynatrace_event.json - Event that would post to Dynatrace"
+echo "  - output/           - All investigation artifacts"
+echo "  - output/model_output.json - Claude's raw investigation"
+echo "  - output/github_comment.json - Comment that would post to GitHub"
+echo "  - output/dynatrace_event.json - Event that would post to Dynatrace"
 echo "============================================================================"
