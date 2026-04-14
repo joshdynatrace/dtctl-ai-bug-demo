@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: arc-load-generator
-          image: arc-load-generator:latest
-          imagePullPolicy: Never
+          image: jhendrick/arc-load-generator:latest
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: arc-store-config
