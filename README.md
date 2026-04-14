@@ -63,7 +63,7 @@ Start the tax-service first (see its own repo), then:
 **Backend:**
 ```bash
 cd backend
-./mvnw spring-boot:run
+mvnw spring-boot:run
 ```
 
 **Frontend:**
