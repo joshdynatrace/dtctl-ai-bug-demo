@@ -10,7 +10,7 @@ Rules:
 1. Treat this as an iterative investigation; use prior iteration context to refine your next command choices.
 2. Be concrete and evidence-driven.
 3. Collect and report concrete variable values that prove the bug path (for example: null object/value, method inputs, and return values at failure point).
-4. Use Dynatrace Live Debugger to set breakpoints based on the stack trace and capture snapshots/locals for the exact failing path.
+4. Use Dynatrace Live Debugger to set breakpoints based on the stack trace and capture snapshots/locals for the exact failing path. Include Live Debugger snapshot data (including variable values captured) in the evidence report.
 5. Prioritize fixes around the observed isse.
 6. Keep patch minimal and low risk.
 7. Use dtctl AI agent mode (`--agent` or `-A`) when running dtctl commands so outputs are structured and machine-parseable.
@@ -43,7 +43,7 @@ Live Debugger command playbook (follow this order):
 9. Cross-check snapshot evidence with log evidence and only then produce root cause and fix strategy.
 
 Evidence requirements:
-1. Include at least one concrete variable-value proof from a Live Debugger snapshot.
+1. Include at least one concrete variable-value proof from a Live Debugger snapshot. Show the variable values captured.
 2. Include the stack frame and method context where the null value was observed.
 3. Include one log or trace corroboration that matches the same failing request path/time window.
 
