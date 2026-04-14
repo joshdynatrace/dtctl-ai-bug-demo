@@ -13,6 +13,7 @@ import requests
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080")
 PRODUCTS_URL = f"{BACKEND_URL}/api/products"
 ORDERS_URL   = f"{BACKEND_URL}/api/orders"
+TAX_PREVIEW_URL = f"{ORDERS_URL}/tax-preview"
 DELAY        = float(os.getenv("DELAY_SECONDS", "5"))
 
 STATES = ["CA", "NY", "TX"]
@@ -28,11 +29,19 @@ def get_products():
         return []
 
 
-def place_order(product_id, product_name, quantity, shipping_state):
+def place_order(product_id, product_name, quantity, shipping_state, total=None):
     try:
+        payload = {
+            "productId": product_id,
+            "quantity": quantity,
+            "shippingState": shipping_state,
+        }
+        if total is not None:
+            payload["total"] = total
+
         resp = requests.post(
             ORDERS_URL,
-            json={"productId": product_id, "quantity": quantity, "shippingState": shipping_state},
+            json=payload,
             timeout=5,
         )
         if resp.status_code == 200:
@@ -45,6 +54,29 @@ def place_order(product_id, product_name, quantity, shipping_state):
             print(f"[{resp.status_code} ERR] {product_name!r:22s}  qty={quantity}  state={shipping_state}  error={error!r}")
     except Exception as exc:
         print(f"[ERROR]  {product_name!r}  qty={quantity}  exception={exc}")
+
+
+def preview_tax(product_id, product_name, quantity, shipping_state):
+    try:
+        resp = requests.get(
+            TAX_PREVIEW_URL,
+            params={
+                "productId": product_id,
+                "quantity": quantity,
+                "shippingState": shipping_state,
+            },
+            timeout=5,
+        )
+
+        if resp.status_code == 200:
+            payload = resp.json()
+            return payload.get("total")
+
+        print(f"[BUG]    {product_name!r:22s}  qty={quantity}  state={shipping_state}  tax-preview status={resp.status_code}")
+        return None
+    except Exception as exc:
+        print(f"[ERROR]  tax-preview {product_name!r}  qty={quantity}  exception={exc}")
+        return None
 
 
 def wait_for_backend():
@@ -65,10 +97,17 @@ def main():
     while True:
         products = get_products() or products
 
-        product       = random.choice(products)
-        quantity      = random.randint(1, 3)
+        product = random.choice(products)
+
+        quantity = random.randint(1, 3)
         shipping_state = random.choice(STATES)
-        place_order(product["id"], product["name"], quantity, shipping_state)
+
+        total = preview_tax(product["id"], product["name"], quantity, shipping_state)
+        if total is None:
+            time.sleep(DELAY)
+            continue
+        place_order(product["id"], product["name"], quantity, shipping_state, total=total)
+
         time.sleep(DELAY)
 
 
