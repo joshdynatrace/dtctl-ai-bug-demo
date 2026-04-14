@@ -93,8 +93,8 @@ Useful optional runtime environment variables:
 
 Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 
-- `DT_ENV_URL` / `DT_API_TOKEN` → `DTCTL_ENVIRONMENT` / `DTCTL_TOKEN`
-  - Dynatrace environment and auth, passed to `dtctl`.
+- `DT_ENVIRONMENT` / `DT_API_TOKEN`
+  - Dynatrace environment and auth for both event posting and `dtctl` commands.
 - `DTCTL_CONTEXT=demo`
   - Named context for dtctl operations.
 - `ANTHROPIC_API_KEY`
@@ -141,9 +141,8 @@ The orchestrator writes outputs into `agent/output/`:
 
 - `issue_context.json`
 - `issue_start_comment_result.json`
-- `agent_prompt_iter_1.md`
-- `investigation_iteration_1.json`
-- `investigation_iterations.json`
+- `agent_prompt.md`
+- `investigation_result.json`
 - `evidence_summary.json`
 - `agent_prompt_rendered.md`
 - `agent_trace.jsonl` (when tracing is enabled)

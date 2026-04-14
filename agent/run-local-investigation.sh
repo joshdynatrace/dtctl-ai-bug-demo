@@ -21,9 +21,6 @@ set -a
 source "$ENV_FILE"
 set +a
 
-# Default if not set in .env.local
-INVESTIGATION_MAX_ITERATIONS="${INVESTIGATION_MAX_ITERATIONS:-3}"
-
 # ============================================================================
 # Setup
 # ============================================================================
@@ -76,7 +73,6 @@ export DT_API_TOKEN="$DT_API_TOKEN"
 export DTCTL_CONTEXT="demo"
 export DTCTL_USE_AGENT_MODE="auto"
 export ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
-export INVESTIGATION_MAX_ITERATIONS="$INVESTIGATION_MAX_ITERATIONS"
 export AGENT_TRACE="${AGENT_TRACE:-true}"
 export AGENT_TRACE_FILE="${AGENT_TRACE_FILE:-$SCRIPT_DIR/output/agent_trace.jsonl}"
 export PYTHONUNBUFFERED="1"
@@ -113,11 +109,6 @@ if [ -z "$ANTHROPIC_API_KEY" ]; then
   exit 1
 fi
 
-if [ -z "$INVESTIGATION_MAX_ITERATIONS" ]; then
-  echo "Error: INVESTIGATION_MAX_ITERATIONS not configured"
-  exit 1
-fi
-
 echo "✓ All credentials configured"
 echo ""
 
@@ -142,7 +133,7 @@ echo ""
 echo "Check the following for results:"
 echo "  - output/           - All investigation artifacts"
 echo "  - output/fix_plan.json - Final investigation result from agent runtime"
-echo "  - output/investigation_iterations.json - Per-iteration outcomes"
+echo "  - output/investigation_result.json - Investigation runtime outcome"
 echo "  - output/issue_comment_result.json - Completion comment post result"
 echo "  - output/dynatrace_event_result.json - Dynatrace event post result"
 echo "============================================================================"

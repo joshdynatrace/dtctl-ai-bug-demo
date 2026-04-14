@@ -48,7 +48,7 @@ def extract_problem_id(issue_body, issue_title=""):
     return None
 
 
-def build_agent_prompt(issue_ctx, iteration_state):
+def build_agent_prompt(issue_ctx, investigation_state):
     template_path = SCRIPT_DIR / "templates" / "agent_prompt.md"
     prompt_template = template_path.read_text(encoding="utf-8")
     skill_text = (
@@ -62,7 +62,7 @@ def build_agent_prompt(issue_ctx, iteration_state):
 
     return (
         prompt_template.replace("{{ISSUE_JSON}}", json.dumps(issue_ctx, indent=2))
-        .replace("{{EVIDENCE_JSON}}", json.dumps(iteration_state, indent=2))
+        .replace("{{EVIDENCE_JSON}}", json.dumps(investigation_state, indent=2))
         .replace("{{DTCTL_SKILL_CONTEXT}}", skill_text)
         .replace("{{DTCTL_LIVE_DEBUGGER_CONTEXT}}", live_debugger_text)
     )
@@ -121,24 +121,20 @@ def run_agent_command(prompt_file_path):
         }
 
 
-def run_investigation_loop(issue_ctx):
-    iteration_state = {
-        "iteration": 1,
-        "max_iterations": 1,
-        "prior_iterations": [],
+def run_investigation(issue_ctx):
+    investigation_state = {
         "notes": [
-            "Choose and run dtctl commands dynamically based on issue details and results from previous rounds.",
+            "Choose and run dtctl commands dynamically based on issue details.",
             "Only finalize when root cause evidence is concrete.",
         ],
     }
 
-    prompt = build_agent_prompt(issue_ctx, iteration_state)
-    prompt_path = OUTPUT_DIR / "agent_prompt_iter_1.md"
+    prompt = build_agent_prompt(issue_ctx, investigation_state)
+    prompt_path = OUTPUT_DIR / "agent_prompt.md"
     prompt_path.write_text(prompt, encoding="utf-8")
 
     cmd_result = run_agent_command(str(prompt_path))
-    iteration_result = {
-        "iteration": 1,
+    investigation_result = {
         "started_at": now_utc().isoformat(),
         "ok": cmd_result.get("ok", False),
         "error": cmd_result.get("error", ""),
@@ -146,13 +142,11 @@ def run_investigation_loop(issue_ctx):
         "ended_at": now_utc().isoformat(),
     }
 
-    iterations = [iteration_result]
-    final_fix_plan = iteration_result.get("result", _default_fix_plan("Empty result from runner"))
+    final_fix_plan = investigation_result.get("result", _default_fix_plan("Empty result from runner"))
 
-    persist("investigation_iteration_1.json", iteration_result)
-    persist("investigation_iterations.json", {"iterations": iterations})
+    persist("investigation_result.json", investigation_result)
     (OUTPUT_DIR / "agent_prompt_rendered.md").write_text(prompt, encoding="utf-8")
-    return final_fix_plan, iterations
+    return final_fix_plan, investigation_result
 
 
 def maybe_create_pr(issue_ctx, fix_plan):
@@ -245,9 +239,9 @@ def main():
     persist("issue_start_comment_result.json", start_comment_result)
 
     # ========================================================================
-    # 3. INVESTIGATE: Iterative handoff to agent runtime (agent chooses dtctl)
+    # 3. INVESTIGATE: Single handoff to agent runtime (agent chooses dtctl)
     # ========================================================================
-    fix_plan, iterations = run_investigation_loop(issue_ctx)
+    fix_plan, investigation_result = run_investigation(issue_ctx)
     persist("fix_plan.json", fix_plan)
     evidence_summary = summarize_evidence_from_fix_plan(fix_plan)
     persist("evidence_summary.json", evidence_summary)
@@ -278,7 +272,7 @@ def main():
         "issue_context": issue_ctx,
         "fix_plan": fix_plan,
         "pr_info": pr_info,
-        "iterations": iterations,
+        "investigation_result": investigation_result,
         "evidence_summary": evidence_summary,
         "start_comment_result": start_comment_result,
         "comment_result": comment_result,
