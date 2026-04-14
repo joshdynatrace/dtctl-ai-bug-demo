@@ -13,6 +13,12 @@
 .env
 .env.*
 !.env.example
+!agent/.env.local.example
+agent/.env.local
+
+# Agent investigation artifacts
+agent/output/*
+!agent/output/.gitkeep
 
 # Python
 __pycache__/

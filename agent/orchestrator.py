@@ -2,34 +2,25 @@
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import requests
-
 from dynatrace_events import post_dynatrace_event
 from github_issues import build_completion_comment, build_start_comment, post_issue_comment
 
 
-OUTPUT_DIR = Path("agent/output")
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = SCRIPT_DIR / "output"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-DEFAULT_DTCTL_SKILL_URL = "https://raw.githubusercontent.com/dynatrace-oss/dtctl/main/skills/dtctl/SKILL.md"
-DEFAULT_DTCTL_LIVE_DEBUGGER_DOC_URL = "https://dynatrace-oss.github.io/dtctl/docs/live-debugger/"
-DTCTL_AGENT_ENV_VARS = [
-    "CLAUDECODE",
-    "OPENCODE",
-    "GITHUB_COPILOT",
-    "CURSOR_AGENT",
-    "KIRO",
-    "JUNIE",
-    "OPENCLAW",
-    "CODEIUM_AGENT",
-    "TABNINE_AGENT",
-    "AMAZON_Q",
-]
+
+
+def _env_flag(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def now_utc():
@@ -57,140 +48,21 @@ def extract_problem_id(issue_body, issue_title=""):
     return None
 
 
-def run_cmd(args, check=False):
-    proc = subprocess.run(args, capture_output=True, text=True)
-    if check and proc.returncode != 0:
-        raise RuntimeError(f"Command failed: {' '.join(args)}\\n{proc.stderr}")
-    return {
-        "cmd": args,
-        "returncode": proc.returncode,
-        "stdout": proc.stdout.strip(),
-        "stderr": proc.stderr.strip(),
-    }
-
-
-def use_dtctl_agent_mode():
-    mode = os.getenv("DTCTL_USE_AGENT_MODE", "auto").lower()
-    if mode in {"true", "1", "yes"}:
-        return True
-    if mode in {"false", "0", "no"}:
-        return False
-    # auto: prefer dtctl's own environment auto-detection when supported
-    return len(detected_agent_env_vars()) == 0
-
-
-def detected_agent_env_vars():
-    return [name for name in DTCTL_AGENT_ENV_VARS if os.getenv(name)]
-
-
-def with_dtctl_agent_args(args):
-    if not use_dtctl_agent_mode():
-        return args
-    if "--agent" in args or "-A" in args:
-        return args
-    return args + ["--agent"]
-
-
-def get_dtctl_command_catalog():
-    return run_cmd(with_dtctl_agent_args(["dtctl", "commands", "--brief", "-o", "json"]))
-
-
-def fetch_dtctl_skill_context():
-    url = os.getenv("DTCTL_SKILL_URL", DEFAULT_DTCTL_SKILL_URL)
-    try:
-        response = requests.get(url, timeout=20)
-        if response.status_code == 200 and response.text.strip():
-            return {
-                "source": url,
-                "content": response.text,
-                "status": "ok",
-            }
-        return {
-            "source": url,
-            "content": "",
-            "status": f"http_{response.status_code}",
-        }
-    except requests.RequestException as err:
-        return {
-            "source": url,
-            "content": "",
-            "status": f"error: {err}",
-        }
-
-
-def fetch_live_debugger_doc_context():
-    url = os.getenv("DTCTL_LIVE_DEBUGGER_DOC_URL", DEFAULT_DTCTL_LIVE_DEBUGGER_DOC_URL)
-    try:
-        response = requests.get(url, timeout=20)
-        if response.status_code == 200 and response.text.strip():
-            return {
-                "source": url,
-                "content": response.text,
-                "status": "ok",
-            }
-        return {
-            "source": url,
-            "content": "",
-            "status": f"http_{response.status_code}",
-        }
-    except requests.RequestException as err:
-        return {
-            "source": url,
-            "content": "",
-            "status": f"error: {err}",
-        }
-
-
-def collect_evidence(issue_ctx):
-    evidence = {
-        "started_at": now_utc().isoformat(),
-        "queries": [],
-        "debugger": [],
-        "notes": [],
-        "dtctl_commands": {},
-    }
-
-    evidence["dtctl_commands"] = get_dtctl_command_catalog()
-
-    # Baseline capabilities only. The investigation agent decides which queries/breakpoints to run.
-    bp_cmds = [
-        with_dtctl_agent_args(["dtctl", "get", "live-debugger", "workspace-filters", "-o", "json"]),
-    ]
-    for cmd in bp_cmds:
-        evidence["debugger"].append(run_cmd(cmd))
-
-    evidence["notes"].append(
-        "Issue parsing and investigation strategy are delegated to the agent prompt; orchestrator only provides context and transport."
-    )
-
-    evidence["ended_at"] = now_utc().isoformat()
-    return evidence
-
-
-def build_agent_prompt(issue_ctx, evidence, skill_context, live_debugger_context):
-    template_path = Path("agent/templates/agent_prompt.md")
+def build_agent_prompt(issue_ctx, iteration_state):
+    template_path = SCRIPT_DIR / "templates" / "agent_prompt.md"
     prompt_template = template_path.read_text(encoding="utf-8")
-    payload = {
-        "issue": issue_ctx,
-        "evidence_summary": {
-            "query_count": len(evidence.get("queries", [])),
-            "debugger_actions": len(evidence.get("debugger", [])),
-        },
-    }
-    skill_text = skill_context.get("content", "")
-    if not skill_text:
-        skill_text = f"Skill context unavailable. Source={skill_context.get('source')} status={skill_context.get('status')}"
-
-    live_debugger_text = live_debugger_context.get("content", "")
-    if not live_debugger_text:
-        live_debugger_text = (
-            "Live Debugger doc context unavailable. "
-            f"Source={live_debugger_context.get('source')} status={live_debugger_context.get('status')}"
-        )
+    skill_text = (
+        "Use dtctl directly during investigation. You are expected to choose commands dynamically, "
+        "execute them, and iterate until root cause confidence is high."
+    )
+    live_debugger_text = (
+        "Use Dynatrace Live Debugger commands through dtctl when needed. "
+        "Collect concrete variable-value evidence before finalizing."
+    )
 
     return (
         prompt_template.replace("{{ISSUE_JSON}}", json.dumps(issue_ctx, indent=2))
-        .replace("{{EVIDENCE_JSON}}", json.dumps(payload, indent=2))
+        .replace("{{EVIDENCE_JSON}}", json.dumps(iteration_state, indent=2))
         .replace("{{DTCTL_SKILL_CONTEXT}}", skill_text)
         .replace("{{DTCTL_LIVE_DEBUGGER_CONTEXT}}", live_debugger_text)
     )
@@ -198,42 +70,89 @@ def build_agent_prompt(issue_ctx, evidence, skill_context, live_debugger_context
 
 def _default_fix_plan(reason):
     return {
-        "root_cause": f"Investigation delegated to agent runtime. {reason}",
+        "root_cause": f"Investigation did not complete: {reason}",
         "confidence": 0.0,
-        "proposed_changes": [
-            "No deterministic patch generated by orchestrator.",
-            "Configure Claude Code investigator command to return structured JSON.",
-        ],
-        "patch_style": "agent-delegated",
+        "evidence": [],
     }
 
 
-def run_model_for_fix_plan(prompt_text, prompt_file_path):
-    del prompt_text
+def run_agent_command(prompt_file_path):
+    runner = SCRIPT_DIR / "agent_sdk_runner.py"
+    trace_enabled = _env_flag("AGENT_TRACE", False)
+    if trace_enabled:
+        proc = subprocess.run(
+            [sys.executable, str(runner), prompt_file_path],
+            stdout=subprocess.PIPE,
+            stderr=None,
+            text=True,
+            cwd=str(SCRIPT_DIR),
+        )
+        stderr_text = ""
+    else:
+        proc = subprocess.run(
+            [sys.executable, str(runner), prompt_file_path],
+            capture_output=True,
+            text=True,
+            cwd=str(SCRIPT_DIR),
+        )
+        stderr_text = proc.stderr.strip()
 
-    agent_runtime = os.getenv("INVESTIGATION_AGENT", "stub").lower()
-    if agent_runtime != "claudecode":
-        return _default_fix_plan(f"INVESTIGATION_AGENT={agent_runtime}")
-
-    cmd_template = os.getenv("CLAUDECODE_INVESTIGATE_CMD", "").strip()
-    if not cmd_template:
-        return _default_fix_plan("CLAUDECODE_INVESTIGATE_CMD not set")
-
-    rendered = cmd_template.format(prompt_file=prompt_file_path)
-    cmd = shlex.split(rendered)
-    result = run_cmd(cmd)
-
-    if result.get("returncode") != 0:
-        return _default_fix_plan(f"ClaudeCode command failed: {result.get('stderr', '')}")
-
-    stdout = result.get("stdout", "")
+    if proc.returncode != 0:
+        error_text = stderr_text or f"Runner failed with exit code {proc.returncode}."
+        return {
+            "ok": False,
+            "error": error_text,
+            "result": _default_fix_plan(error_text),
+        }
     try:
-        parsed = json.loads(stdout)
+        parsed = json.loads(proc.stdout.strip())
         if isinstance(parsed, dict):
-            return parsed
-        return _default_fix_plan("ClaudeCode output was valid JSON but not an object")
+            return {"ok": True, "error": "", "result": parsed}
+        return {
+            "ok": False,
+            "error": "Runner output was not a JSON object",
+            "result": _default_fix_plan("Runner output was not a JSON object"),
+        }
     except json.JSONDecodeError:
-        return _default_fix_plan("ClaudeCode output was not valid JSON")
+        return {
+            "ok": False,
+            "error": "Runner output was not valid JSON",
+            "result": _default_fix_plan("Runner output was not valid JSON"),
+        }
+
+
+def run_investigation_loop(issue_ctx):
+    iteration_state = {
+        "iteration": 1,
+        "max_iterations": 1,
+        "prior_iterations": [],
+        "notes": [
+            "Choose and run dtctl commands dynamically based on issue details and results from previous rounds.",
+            "Only finalize when root cause evidence is concrete.",
+        ],
+    }
+
+    prompt = build_agent_prompt(issue_ctx, iteration_state)
+    prompt_path = OUTPUT_DIR / "agent_prompt_iter_1.md"
+    prompt_path.write_text(prompt, encoding="utf-8")
+
+    cmd_result = run_agent_command(str(prompt_path))
+    iteration_result = {
+        "iteration": 1,
+        "started_at": now_utc().isoformat(),
+        "ok": cmd_result.get("ok", False),
+        "error": cmd_result.get("error", ""),
+        "result": cmd_result.get("result", {}),
+        "ended_at": now_utc().isoformat(),
+    }
+
+    iterations = [iteration_result]
+    final_fix_plan = iteration_result.get("result", _default_fix_plan("Empty result from runner"))
+
+    persist("investigation_iteration_1.json", iteration_result)
+    persist("investigation_iterations.json", {"iterations": iterations})
+    (OUTPUT_DIR / "agent_prompt_rendered.md").write_text(prompt, encoding="utf-8")
+    return final_fix_plan, iterations
 
 
 def maybe_create_pr(issue_ctx, fix_plan):
@@ -263,37 +182,42 @@ def safe_text(value, max_len=1800):
     return text[: max_len - 3] + "..."
 
 
-def summarize_evidence(evidence):
+def summarize_evidence_from_fix_plan(fix_plan):
+    evidence_items = fix_plan.get("evidence", [])
+    excerpt_max_len = int(os.getenv("EVIDENCE_EXCERPT_MAX_LEN", "4000"))
     query_summaries = []
-    for item in evidence.get("queries", []):
-        result = item.get("result", {})
-        query_summaries.append(
-            {
-                "name": item.get("name"),
-                "returncode": result.get("returncode"),
-                "stdout_excerpt": safe_text(result.get("stdout", ""), max_len=280),
-            }
-        )
-
     debugger_summaries = []
-    for item in evidence.get("debugger", []):
-        debugger_summaries.append(
-            {
-                "cmd": " ".join(item.get("cmd", [])),
-                "returncode": item.get("returncode"),
-                "stdout_excerpt": safe_text(item.get("stdout", ""), max_len=280),
-            }
-        )
-
+    for item in evidence_items if isinstance(evidence_items, list) else []:
+        detail = safe_text(item.get("detail", ""), max_len=excerpt_max_len)
+        evidence_type = str(item.get("type", "")).lower()
+        if evidence_type == "snapshot":
+            debugger_summaries.append(
+                {
+                    "cmd": "agent_collected_snapshot",
+                    "returncode": 0,
+                    "stdout_excerpt": detail,
+                }
+            )
+        else:
+            query_summaries.append(
+                {
+                    "name": evidence_type or "evidence",
+                    "returncode": 0,
+                    "stdout_excerpt": detail,
+                }
+            )
     return {
-        "query_count": len(evidence.get("queries", [])),
-        "debugger_count": len(evidence.get("debugger", [])),
+        "query_count": len(query_summaries),
+        "debugger_count": len(debugger_summaries),
         "queries": query_summaries,
         "debugger": debugger_summaries,
     }
 
 
 def main():
+    # ========================================================================
+    # 1. INTAKE: Parse GitHub issue and extract Dynatrace Problem ID
+    # ========================================================================
     event = read_github_event()
     issue = event.get("issue", {})
     issue_body = issue.get("body", "") or ""
@@ -305,7 +229,6 @@ def main():
         "issue_body": issue_body,
         "problem_id": extract_problem_id(issue_body, issue.get("title", "")),
         "service_name": os.getenv("DEFAULT_SERVICE_NAME", ""),
-        "detected_agent_env_vars": detected_agent_env_vars(),
         "repo": os.getenv("GITHUB_REPOSITORY", ""),
         "run_id": os.getenv("GITHUB_RUN_ID", ""),
         "sha": os.getenv("GITHUB_SHA", ""),
@@ -315,41 +238,47 @@ def main():
     if not issue_ctx.get("problem_id"):
         raise RuntimeError("Could not extract Dynatrace problem ID from the issue body/title")
 
+    # ========================================================================
+    # 2. NOTIFY: Post "investigation started" comment on the GitHub issue
+    # ========================================================================
     start_comment_result = post_issue_comment(issue_ctx, build_start_comment(issue_ctx))
     persist("issue_start_comment_result.json", start_comment_result)
 
-    skill_context = fetch_dtctl_skill_context()
-    persist("dtctl_skill_context.json", skill_context)
-
-    live_debugger_context = fetch_live_debugger_doc_context()
-    persist("dtctl_live_debugger_context.json", live_debugger_context)
-
-    evidence = collect_evidence(issue_ctx)
-    persist("evidence.json", evidence)
-    evidence_summary = summarize_evidence(evidence)
+    # ========================================================================
+    # 3. INVESTIGATE: Iterative handoff to agent runtime (agent chooses dtctl)
+    # ========================================================================
+    fix_plan, iterations = run_investigation_loop(issue_ctx)
+    persist("fix_plan.json", fix_plan)
+    evidence_summary = summarize_evidence_from_fix_plan(fix_plan)
     persist("evidence_summary.json", evidence_summary)
 
-    prompt = build_agent_prompt(issue_ctx, evidence, skill_context, live_debugger_context)
-    prompt_path = OUTPUT_DIR / "agent_prompt_rendered.md"
-    prompt_path.write_text(prompt, encoding="utf-8")
-
-    fix_plan = run_model_for_fix_plan(prompt, str(prompt_path))
-    persist("fix_plan.json", fix_plan)
-
+    # ========================================================================
+    # 4. CREATE PR (optional): If AUTO_PR enabled, create branch + PR
+    # ========================================================================
     pr_info = maybe_create_pr(issue_ctx, fix_plan)
     persist("pr_info.json", pr_info)
 
+    # ========================================================================
+    # 5. REPORT RESULTS: Post completion comment with evidence summary
+    # ========================================================================
     comment_body = build_completion_comment(issue_ctx, fix_plan, pr_info, evidence_summary)
     comment_result = post_issue_comment(issue_ctx, comment_body)
     persist("issue_comment_result.json", comment_result)
 
+    # ========================================================================
+    # 6. UPDATE DYNATRACE: Post investigation event linked to problem ID
+    # ========================================================================
     dt_event_result = post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary)
     persist("dynatrace_event_result.json", dt_event_result)
 
+    # ========================================================================
+    # 7. FINALIZE: Persist summary and output to stdout for CI logging
+    # ========================================================================
     summary = {
         "issue_context": issue_ctx,
         "fix_plan": fix_plan,
         "pr_info": pr_info,
+        "iterations": iterations,
         "evidence_summary": evidence_summary,
         "start_comment_result": start_comment_result,
         "comment_result": comment_result,

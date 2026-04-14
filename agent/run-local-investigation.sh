@@ -4,19 +4,52 @@
 set -e  # Exit on error
 
 # ============================================================================
-# CONFIGURATION - Update these with your actual credentials
+# CONFIGURATION - values are loaded from .env.local
 # ============================================================================
 
-GITHUB_TOKEN="your-github-token-here"
-DT_ENVIRONMENT="your-dt-environment-url"  # e.g., https://xxx.apps.dynatrace.com
-DT_API_TOKEN="your-dt-api-token"
-ANTHROPIC_API_KEY="your-anthropic-api-key"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env.local"
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Error: Missing $ENV_FILE"
+  echo "Create it from $SCRIPT_DIR/.env.local.example"
+  exit 1
+fi
+
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
+
+# Default if not set in .env.local
+INVESTIGATION_MAX_ITERATIONS="${INVESTIGATION_MAX_ITERATIONS:-3}"
 
 # ============================================================================
 # Setup
 # ============================================================================
 
 echo "Setting up local investigation environment..."
+
+if command -v python3 >/dev/null 2>&1; then
+  BASE_PYTHON="python3"
+elif command -v python >/dev/null 2>&1; then
+  BASE_PYTHON="python"
+else
+  echo "Error: Python is not installed or not on PATH"
+  exit 1
+fi
+
+# Use a local virtual environment so package installs work on externally-managed Python builds.
+VENV_DIR="${VENV_DIR:-.venv-local-investigation}"
+if [ ! -d "$VENV_DIR" ]; then
+  "$BASE_PYTHON" -m venv "$VENV_DIR"
+fi
+PYTHON_BIN="$VENV_DIR/bin/python"
+
+if ! "$PYTHON_BIN" -c "import requests, claude_agent_sdk" >/dev/null 2>&1; then
+  echo "Installing Python dependencies in $VENV_DIR..."
+  "$PYTHON_BIN" -m pip install requests claude-agent-sdk
+fi
 
 # Create temp directory for GitHub event
 mkdir -p /tmp/github-event
@@ -42,10 +75,10 @@ export DT_ENVIRONMENT="$DT_ENVIRONMENT"
 export DT_API_TOKEN="$DT_API_TOKEN"
 export DTCTL_CONTEXT="demo"
 export DTCTL_USE_AGENT_MODE="auto"
-export CLAUDECODE="1"
-export INVESTIGATION_AGENT="claudecode"
 export ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
-export CLAUDECODE_INVESTIGATE_CMD="python claude_runner.py {prompt_file}"
+export INVESTIGATION_MAX_ITERATIONS="$INVESTIGATION_MAX_ITERATIONS"
+export AGENT_TRACE="${AGENT_TRACE:-true}"
+export AGENT_TRACE_FILE="${AGENT_TRACE_FILE:-$SCRIPT_DIR/output/agent_trace.jsonl}"
 export PYTHONUNBUFFERED="1"
 
 # ============================================================================
@@ -55,23 +88,33 @@ export PYTHONUNBUFFERED="1"
 echo ""
 echo "Validating configuration..."
 
-if [ "$GITHUB_TOKEN" = "your-github-token-here" ]; then
-  echo "❌ Error: GITHUB_TOKEN not configured"
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "Error: GITHUB_TOKEN not configured"
   exit 1
 fi
 
-if [ "$DT_ENVIRONMENT" = "your-dt-environment-url" ]; then
+if [ -z "$DT_ENVIRONMENT" ]; then
   echo "Error: DT_ENVIRONMENT not configured"
   exit 1
 fi
 
-if [ "$DT_API_TOKEN" = "your-dt-api-token" ]; then
+if [[ "$DT_ENVIRONMENT" != *".live.dynatrace.com"* ]]; then
+  echo "Error: DT_ENVIRONMENT must be a .live.dynatrace.com URL"
+  exit 1
+fi
+
+if [ -z "$DT_API_TOKEN" ]; then
   echo "Error: DT_API_TOKEN not configured"
   exit 1
 fi
 
-if [ "$ANTHROPIC_API_KEY" = "your-anthropic-api-key" ]; then
-  echo "❌ Error: ANTHROPIC_API_KEY not configured"
+if [ -z "$ANTHROPIC_API_KEY" ]; then
+  echo "Error: ANTHROPIC_API_KEY not configured"
+  exit 1
+fi
+
+if [ -z "$INVESTIGATION_MAX_ITERATIONS" ]; then
+  echo "Error: INVESTIGATION_MAX_ITERATIONS not configured"
   exit 1
 fi
 
@@ -85,8 +128,8 @@ echo ""
 echo "Running orchestrator..."
 echo ""
 
-cd "$(dirname "$0")"
-python orchestrator.py
+cd "$SCRIPT_DIR"
+$PYTHON_BIN -B orchestrator.py
 
 # ============================================================================
 # Results
@@ -98,7 +141,8 @@ echo "Investigation complete!"
 echo ""
 echo "Check the following for results:"
 echo "  - output/           - All investigation artifacts"
-echo "  - output/model_output.json - Claude's raw investigation"
-echo "  - output/github_comment.json - Comment that would post to GitHub"
-echo "  - output/dynatrace_event.json - Event that would post to Dynatrace"
+echo "  - output/fix_plan.json - Final investigation result from agent runtime"
+echo "  - output/investigation_iterations.json - Per-iteration outcomes"
+echo "  - output/issue_comment_result.json - Completion comment post result"
+echo "  - output/dynatrace_event_result.json - Dynatrace event post result"
 echo "============================================================================"

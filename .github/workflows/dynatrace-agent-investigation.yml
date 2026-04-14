@@ -24,13 +24,8 @@ jobs:
       DTCTL_ENVIRONMENT: ${{ secrets.DT_ENV_URL }}
       DTCTL_TOKEN: ${{ secrets.DT_API_TOKEN }}
       DTCTL_CONTEXT: demo
-      DTCTL_USE_AGENT_MODE: "auto"
-      CLAUDECODE: "1"
-      INVESTIGATION_AGENT: "claudecode"
-      CLAUDECODE_INVESTIGATE_CMD: ${{ vars.CLAUDECODE_INVESTIGATE_CMD }}
-      AGENT_MODEL: gpt-5.3-codex
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       AUTO_PR: "true"
-      DRY_RUN: "false"
 
     steps:
       - name: Checkout
@@ -44,7 +39,7 @@ jobs:
       - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
-          pip install requests pyyaml
+          pip install requests pyyaml claude-agent-sdk
 
       - name: Install dtctl
         run: |
@@ -55,20 +50,6 @@ jobs:
       - name: Verify dtctl non-interactive auth
         run: |
           dtctl commands --brief -o json
-
-      - name: Validate Claude configuration
-        env:
-          CLAUDECODE_INVESTIGATE_CMD: ${{ vars.CLAUDECODE_INVESTIGATE_CMD }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          if [ -z "$CLAUDECODE_INVESTIGATE_CMD" ]; then
-            echo "Missing repo variable: CLAUDECODE_INVESTIGATE_CMD"
-            exit 1
-          fi
-          if [ -z "$ANTHROPIC_API_KEY" ]; then
-            echo "Missing repo secret: ANTHROPIC_API_KEY"
-            exit 1
-          fi
 
       - name: Run orchestrator
         env:
