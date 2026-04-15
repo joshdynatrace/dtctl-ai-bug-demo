@@ -125,7 +125,7 @@ async def _run(prompt_text, trace):
             allowed_tools=["Bash", "Read"],
             model=model,
             permission_mode="bypassPermissions",
-            max_turns=40,
+            max_turns=50,
             cwd=str(SCRIPT_DIR.parent),
             include_partial_messages=include_partial,
         ),
