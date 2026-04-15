@@ -15,6 +15,7 @@ Rules:
 6. Keep patch minimal and low risk.
 7. Use dtctl AI agent mode (`--agent` or `-A`) when running dtctl commands so outputs are structured and machine-parseable.
 8. Return strictly valid JSON matching the schema below.
+9. The full repository source code is already checked out in the current working directory. Read source files directly with `cat` or `Read` — do NOT fetch them via `gh api` or any remote call.
 
 Issue context:
 {{ISSUE_JSON}}

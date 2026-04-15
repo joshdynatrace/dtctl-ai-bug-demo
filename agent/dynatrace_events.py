@@ -16,7 +16,7 @@ def _safe_text(value, max_len=1800):
 
 
 def _resolve_dynatrace_env():
-    return os.getenv("DT_ENVIRONMENT")
+    return os.getenv("DT_ENV_LIVE")
 
 
 def _resolve_dynatrace_token():
@@ -37,7 +37,7 @@ def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):
     if ".live.dynatrace.com" not in dt_env:
         return {
             "status": "skipped",
-            "reason": "DT_ENVIRONMENT must use a .live.dynatrace.com domain for Events API",
+            "reason": "DT_ENV_LIVE must use a .live.dynatrace.com domain for Events API",
             "endpoint": _events_ingest_url(dt_env),
         }
 

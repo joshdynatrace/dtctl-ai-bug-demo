@@ -51,7 +51,7 @@ This replaces the older single-turn API model where Claude could only *describe*
 
 Set these repository secrets:
 
-- `DT_ENVIRONMENT`
+- `DT_ENV_LIVE`
   - Example: `https://abc12345.live.dynatrace.com`
 - `DT_API_TOKEN`
   - Dynatrace API token. Required scope: **`events.ingest`** (for posting investigation results back to the Dynatrace problem). Add any additional scopes required by your dtctl commands.
@@ -97,8 +97,8 @@ Useful optional runtime environment variables:
 
 Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 
-- `DT_ENVIRONMENT` / `DT_API_TOKEN`
-  - Dynatrace environment and auth for both event posting and `dtctl` commands.
+- `DT_ENV_LIVE` / `DT_ENV_APPS` / `DT_API_TOKEN`
+  - Dynatrace environment URLs and auth. `DT_ENV_LIVE` is used by the Events API; `DT_ENV_APPS` is used by dtctl.
 - `DTCTL_CONTEXT=demo`
   - Named context for dtctl operations.
 - `ANTHROPIC_API_KEY`
@@ -188,7 +188,8 @@ This gives two views of agent behavior:
 Manual setup (if you prefer):
 
 ```bash
-export DT_ENVIRONMENT="https://abc12345.live.dynatrace.com"
+export DT_ENV_LIVE="https://abc12345.live.dynatrace.com"
+export DT_ENV_APPS="https://abc12345.apps.dynatrace.com"
 export DT_API_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
 export GITHUB_TOKEN="ghp_xxx"
 export GITHUB_REPOSITORY="owner/repo"
@@ -204,7 +205,7 @@ python agent/orchestrator.py
 - Problem ID not found
   - Ensure issue body includes `Problem: P-123456`.
 - dtctl auth errors
-  - Verify `DT_ENVIRONMENT` uses a `.live.dynatrace.com` URL and `DT_API_TOKEN` is valid with the `events.ingest` scope.
+  - Verify `DT_ENV_LIVE` uses a `.live.dynatrace.com` URL and `DT_API_TOKEN` is valid with the `events.ingest` scope.
 - Agent SDK runner fails
   - Ensure `ANTHROPIC_API_KEY` is set and valid.
   - Check that `claude-agent-sdk` is installed: `pip install claude-agent-sdk`.

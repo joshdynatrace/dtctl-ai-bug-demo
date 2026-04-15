@@ -19,7 +19,8 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: "1"
-      DT_ENVIRONMENT: ${{ secrets.DT_ENVIRONMENT }}
+      DT_ENV_LIVE: ${{ secrets.DT_ENV_LIVE }}
+      DT_ENV_APPS: ${{ secrets.DT_ENV_APPS }}
       DT_API_TOKEN: ${{ secrets.DT_API_TOKEN }}
       DTCTL_CONTEXT: demo
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

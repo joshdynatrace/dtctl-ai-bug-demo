@@ -1,0 +1,20 @@
+# dtctl project config for CI/CD and local use.
+# Secrets are supplied via environment variables — do not commit real values.
+#
+# Required environment variables:
+#   DT_ENV_APPS     - e.g. https://abc12345.apps.dynatrace.com  (used by dtctl)
+#   DT_ENV_LIVE     - e.g. https://abc12345.live.dynatrace.com  (used by Events API)
+#   DT_API_TOKEN    - Dynatrace platform API token
+
+apiVersion: dtctl.io/v1
+kind: Config
+current-context: demo
+contexts:
+  - name: demo
+    context:
+      environment: ${DT_ENV_APPS}
+      token-ref: demo-token
+      safety-level: readwrite-all
+tokens:
+  - name: demo-token
+    token: ${DT_API_TOKEN}

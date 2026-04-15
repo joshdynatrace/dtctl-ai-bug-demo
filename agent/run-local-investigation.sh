@@ -68,7 +68,7 @@ export GITHUB_REPOSITORY="joshDynatrace/dtctl-ai-bug-demo"
 export GITHUB_TOKEN="$GITHUB_TOKEN"
 export GITHUB_RUN_ID="local-dry-run-$(date +%s)"
 export GITHUB_SHA="local-test"
-export DT_ENVIRONMENT="$DT_ENVIRONMENT"
+export DT_ENV_LIVE="$DT_ENV_LIVE"
 export DT_API_TOKEN="$DT_API_TOKEN"
 export DTCTL_CONTEXT="demo"
 export DTCTL_USE_AGENT_MODE="auto"
@@ -89,13 +89,13 @@ if [ -z "$GITHUB_TOKEN" ]; then
   exit 1
 fi
 
-if [ -z "$DT_ENVIRONMENT" ]; then
-  echo "Error: DT_ENVIRONMENT not configured"
+if [ -z "$DT_ENV_LIVE" ]; then
+  echo "Error: DT_ENV_LIVE not configured"
   exit 1
 fi
 
-if [[ "$DT_ENVIRONMENT" != *".live.dynatrace.com"* ]]; then
-  echo "Error: DT_ENVIRONMENT must be a .live.dynatrace.com URL"
+if [[ "$DT_ENV_LIVE" != *".live.dynatrace.com"* ]]; then
+  echo "Error: DT_ENV_LIVE must be a .live.dynatrace.com URL"
   exit 1
 fi
 
