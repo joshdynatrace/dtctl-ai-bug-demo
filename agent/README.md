@@ -47,12 +47,35 @@ The orchestrator uses the Claude Agent SDK (`agent/agent_sdk_runner.py`) to crea
 
 This replaces the older single-turn API model where Claude could only *describe* dtctl commands — now it actually *executes* them.
 
+## dtctl Configuration
+
+The repo includes a `.dtctl.yaml` in the project root. dtctl automatically discovers this file by walking up from the working directory — in GitHub Actions this is the repo checkout root, locally it is wherever you run commands from.
+
+The config defines a `demo` context using environment variable substitution so no secrets are committed:
+
+```yaml
+contexts:
+  - name: demo
+    context:
+      environment: ${DT_ENV_APPS}   # https://abc12345.apps.dynatrace.com
+      token-ref: demo-token
+tokens:
+  - name: demo-token
+    token: ${DT_API_TOKEN}
+```
+
+`DT_ENV_APPS` and `DT_API_TOKEN` must be present in the environment when dtctl runs. In GitHub Actions they come from repository secrets; locally they come from `.env.local`.
+
 ## Required GitHub Secrets
 
 Set these repository secrets:
 
 - `DT_ENV_LIVE`
   - Example: `https://abc12345.live.dynatrace.com`
+  - Used by the Events API to post investigation results back to the Dynatrace problem.
+- `DT_ENV_APPS`
+  - Example: `https://abc12345.apps.dynatrace.com`
+  - Used by dtctl for all Dynatrace API operations.
 - `DT_API_TOKEN`
   - Dynatrace API token. Required scope: **`events.ingest`** (for posting investigation results back to the Dynatrace problem). Add any additional scopes required by your dtctl commands.
 - `ANTHROPIC_API_KEY`
