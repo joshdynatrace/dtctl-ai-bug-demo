@@ -50,6 +50,10 @@ run_command(["kubectl", "wait", "deployment/arc-backend", "-n", "arc-store", "--
 run_command(["kubectl", "wait", "deployment/arc-frontend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 run_command(["kubectl", "wait", "deployment/arc-load-generator", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 
+# Restart backend once for the Live Debugger, if OneAgent isn't started yet it may not pick it up
+time.sleep(10)
+run_command(["kubectl", "rollout", "restart", "deployment/arc-backend", "-n", "arc-store"])
+
 if CODESPACE_NAME.startswith("dttest-"):
     run_command(["pip", "install", "-r", f"/workspaces/{REPOSITORY_NAME}/.devcontainer/testing/requirements.txt", "--break-system-packages"])
     run_command(["python",  f"/workspaces/{REPOSITORY_NAME}/.devcontainer/testing/testharness.py"])
