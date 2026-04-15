@@ -62,6 +62,10 @@ Set these repository secrets:
 
 The investigation flow uses the GitHub token to post issue comments.
 
+The workflow uses GitHub's built-in `GITHUB_TOKEN` by default (no custom secret required).
+
+If issue comments fail with 403 permission errors, check repository Settings -> Actions -> Workflow permissions and make sure workflow write access is allowed.
+
 Required permissions:
 
 - Fine-grained PAT (recommended)

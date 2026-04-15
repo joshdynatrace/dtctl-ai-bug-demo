@@ -19,11 +19,12 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: "1"
-      DT_ENVIRONMENT: ${{ secrets.DT_ENV_URL }}
+      DT_ENVIRONMENT: ${{ secrets.DT_ENVIRONMENT }}
       DT_API_TOKEN: ${{ secrets.DT_API_TOKEN }}
       DTCTL_CONTEXT: demo
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       AUTO_PR: "true"
+      AGENT_TRACE: "true"
 
     steps:
       - name: Checkout

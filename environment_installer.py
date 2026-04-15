@@ -41,12 +41,14 @@ run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/namespace.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/configmap.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/backend.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/frontend.yaml"])
+run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/load-generator.yaml"])
 run_command(["kubectl", "apply", "-f", f"{BASE_DIR}/k8s/ingress.yaml"])
 
 # Wait for deployments to become available
-print("Waiting for front end & backend deployments to become available...")
+print("Waiting for frontend, backend, and load-generator deployments to become available...")
 run_command(["kubectl", "wait", "deployment/arc-backend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 run_command(["kubectl", "wait", "deployment/arc-frontend", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
+run_command(["kubectl", "wait", "deployment/arc-load-generator", "-n", "arc-store", "--for=condition=available", f"--timeout={STANDARD_TIMEOUT}"])
 
 if CODESPACE_NAME.startswith("dttest-"):
     run_command(["pip", "install", "-r", f"/workspaces/{REPOSITORY_NAME}/.devcontainer/testing/requirements.txt", "--break-system-packages"])
