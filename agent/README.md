@@ -75,7 +75,12 @@ Set these repository secrets:
   - Used by the Events API to post investigation results back to the Dynatrace problem.
   - `DT_ENV_APPS` (used by dtctl) is derived from this automatically in CI.
 - `DT_API_TOKEN`
-  - Dynatrace API token. Required scope: **`events.ingest`** (for posting investigation results back to the Dynatrace problem). Add any additional scopes required by your dtctl commands.
+  - Dynatrace **Platform token** for dtctl + event posting.
+  - Minimum scopes:
+    - `events.ingest` (post investigation event)
+    - `storage:logs:read` (DQL log query via dtctl)
+    - `settings:objects:read` and `settings:schemas:read` (Live Debugger/breakpoint resource discovery)
+  - If you still get 401 on `dtctl get breakpoints`, add the additional Live Debugger-related scopes from dtctl token-scope docs for your tenant policy.
 - `ANTHROPIC_API_KEY`
   - Anthropic API key for Claude Agent SDK operations.
 

@@ -59,7 +59,27 @@ jobs:
 
       - name: Verify dtctl non-interactive auth
         run: |
-          dtctl commands --brief -o json
+          set -euo pipefail
+          dtctl commands --brief -o json >/dev/null
+
+          # Validate token + scopes with a real data-plane call.
+          QUERY_OUT="$(dtctl query -A 'fetch logs | limit 1' 2>&1)" || {
+            echo "$QUERY_OUT"
+            if echo "$QUERY_OUT" | grep -Eqi "401|unauthorized|forbidden"; then
+              echo "dtctl auth check failed: DT_API_TOKEN is unauthorized for DQL."
+              echo "Use a Dynatrace Platform token for DT_ENV_APPS and include at least storage:logs:read."
+            fi
+            exit 1
+          }
+
+          # Validate Live Debugger read path used by the agent.
+          BP_OUT="$(dtctl get breakpoints -A -o json 2>&1)" || {
+            echo "$BP_OUT"
+            if echo "$BP_OUT" | grep -Eqi "401|unauthorized|forbidden"; then
+              echo "Live Debugger auth check failed: token missing debugger/settings scopes."
+            fi
+            exit 1
+          }
 
       - name: Run orchestrator
         env:
