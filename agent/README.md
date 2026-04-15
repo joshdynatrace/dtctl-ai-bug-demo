@@ -64,7 +64,7 @@ tokens:
     token: ${DT_API_TOKEN}
 ```
 
-`DT_ENV_APPS` and `DT_API_TOKEN` must be present in the environment when dtctl runs. In GitHub Actions they come from repository secrets; locally they come from `.env.local`.
+`DT_ENV_APPS` and `DT_API_TOKEN` must be present in the environment when dtctl runs. In GitHub Actions, `DT_ENV_APPS` is derived automatically from `DT_ENV_LIVE` by the workflow — no separate secret required. Locally it comes from `.env.local`.
 
 ## Required GitHub Secrets
 
@@ -73,9 +73,7 @@ Set these repository secrets:
 - `DT_ENV_LIVE`
   - Example: `https://abc12345.live.dynatrace.com`
   - Used by the Events API to post investigation results back to the Dynatrace problem.
-- `DT_ENV_APPS`
-  - Example: `https://abc12345.apps.dynatrace.com`
-  - Used by dtctl for all Dynatrace API operations.
+  - `DT_ENV_APPS` (used by dtctl) is derived from this automatically in CI.
 - `DT_API_TOKEN`
   - Dynatrace API token. Required scope: **`events.ingest`** (for posting investigation results back to the Dynatrace problem). Add any additional scopes required by your dtctl commands.
 - `ANTHROPIC_API_KEY`
