@@ -69,7 +69,7 @@ export GITHUB_TOKEN="$GITHUB_TOKEN"
 export GITHUB_RUN_ID="local-dry-run-$(date +%s)"
 export GITHUB_SHA="local-test"
 export DT_ENV_LIVE="$DT_ENV_LIVE"
-export DT_API_TOKEN="$DT_API_TOKEN"
+export DT_PLATFORM_TOKEN="$DT_PLATFORM_TOKEN"
 export DTCTL_CONTEXT="demo"
 export DTCTL_USE_AGENT_MODE="auto"
 export ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
@@ -99,8 +99,8 @@ if [[ "$DT_ENV_LIVE" != *".live.dynatrace.com"* ]]; then
   exit 1
 fi
 
-if [ -z "$DT_API_TOKEN" ]; then
-  echo "Error: DT_API_TOKEN not configured"
+if [ -z "$DT_PLATFORM_TOKEN" ]; then
+  echo "Error: DT_PLATFORM_TOKEN not configured"
   exit 1
 fi
 

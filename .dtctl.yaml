@@ -4,7 +4,7 @@
 # Required environment variables:
 #   DT_ENV_APPS     - e.g. https://abc12345.apps.dynatrace.com  (used by dtctl)
 #   DT_ENV_LIVE     - e.g. https://abc12345.live.dynatrace.com  (used by Events API)
-#   DT_API_TOKEN    - Dynatrace platform API token
+#   DT_PLATFORM_TOKEN - Dynatrace platform token
 
 apiVersion: dtctl.io/v1
 kind: Config
@@ -17,4 +17,4 @@ contexts:
       safety-level: readwrite-all
 tokens:
   - name: demo-token
-    token: ${DT_API_TOKEN}
+    token: ${DT_PLATFORM_TOKEN}

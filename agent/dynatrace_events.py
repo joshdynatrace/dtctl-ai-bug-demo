@@ -20,7 +20,7 @@ def _resolve_dynatrace_env():
 
 
 def _resolve_dynatrace_token():
-    return os.getenv("DT_API_TOKEN")
+    return os.getenv("DT_PLATFORM_TOKEN")
 
 
 def _events_ingest_url(dt_env):

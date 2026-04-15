@@ -61,10 +61,10 @@ contexts:
       token-ref: demo-token
 tokens:
   - name: demo-token
-    token: ${DT_API_TOKEN}
+    token: ${DT_PLATFORM_TOKEN}
 ```
 
-`DT_ENV_APPS` and `DT_API_TOKEN` must be present in the environment when dtctl runs. In GitHub Actions, `DT_ENV_APPS` is derived automatically from `DT_ENV_LIVE` by the workflow — no separate secret required. Locally it comes from `.env.local`.
+`DT_ENV_APPS` and `DT_PLATFORM_TOKEN` must be present in the environment when dtctl runs. In GitHub Actions, `DT_ENV_APPS` is derived automatically from `DT_ENV_LIVE` by the workflow — no separate secret required. Locally it comes from `.env.local`.
 
 ## Required GitHub Secrets
 
@@ -74,12 +74,10 @@ Set these repository secrets:
   - Example: `https://abc12345.live.dynatrace.com`
   - Used by the Events API to post investigation results back to the Dynatrace problem.
   - `DT_ENV_APPS` (used by dtctl) is derived from this automatically in CI.
-- `DT_API_TOKEN`
+- `DT_PLATFORM_TOKEN`
   - Dynatrace **Platform token** for dtctl + event posting.
-  - Minimum scopes:
-    - `events.ingest` (post investigation event)
-    - `storage:logs:read` (DQL log query via dtctl)
-    - `settings:objects:read` and `settings:schemas:read` (Live Debugger/breakpoint resource discovery)
+  - Scopes:
+    - `https://dynatrace-oss.github.io/dtctl/docs/token-scopes`
   - If you still get 401 on `dtctl get breakpoints`, add the additional Live Debugger-related scopes from dtctl token-scope docs for your tenant policy.
 - `ANTHROPIC_API_KEY`
   - Anthropic API key for Claude Agent SDK operations.
@@ -123,7 +121,7 @@ Useful optional runtime environment variables:
 
 Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 
-- `DT_ENV_LIVE` / `DT_ENV_APPS` / `DT_API_TOKEN`
+- `DT_ENV_LIVE` / `DT_ENV_APPS` / `DT_PLATFORM_TOKEN`
   - Dynatrace environment URLs and auth. `DT_ENV_LIVE` is used by the Events API; `DT_ENV_APPS` is used by dtctl.
 - `DTCTL_CONTEXT=demo`
   - Named context for dtctl operations.
@@ -216,7 +214,7 @@ Manual setup (if you prefer):
 ```bash
 export DT_ENV_LIVE="https://abc12345.live.dynatrace.com"
 export DT_ENV_APPS="https://abc12345.apps.dynatrace.com"
-export DT_API_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
+export DT_PLATFORM_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
 export GITHUB_TOKEN="ghp_xxx"
 export GITHUB_REPOSITORY="owner/repo"
 export GITHUB_EVENT_PATH="/path/to/issue-event.json"
@@ -231,7 +229,7 @@ python agent/orchestrator.py
 - Problem ID not found
   - Ensure issue body includes `Problem: P-123456`.
 - dtctl auth errors
-  - Verify `DT_ENV_LIVE` uses a `.live.dynatrace.com` URL and `DT_API_TOKEN` is valid with the `events.ingest` scope.
+  - Verify `DT_ENV_LIVE` uses a `.live.dynatrace.com` URL and `DT_PLATFORM_TOKEN` is valid with the required platform scopes.
 - Agent SDK runner fails
   - Ensure `ANTHROPIC_API_KEY` is set and valid.
   - Check that `claude-agent-sdk` is installed: `pip install claude-agent-sdk`.

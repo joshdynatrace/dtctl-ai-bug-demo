@@ -20,7 +20,7 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       DT_ENV_LIVE: ${{ secrets.DT_ENV_LIVE }}
-      DT_API_TOKEN: ${{ secrets.DT_API_TOKEN }}
+      DT_PLATFORM_TOKEN: ${{ secrets.DT_PLATFORM_TOKEN }}
       DTCTL_CONTEXT: demo
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       AUTO_PR: "true"
@@ -53,7 +53,7 @@ jobs:
             --environment "$DT_ENV_APPS" \
             --token-ref demo-token
           dtctl config set-credentials demo-token \
-            --token "$DT_API_TOKEN"
+            --token "$DT_PLATFORM_TOKEN"
           dtctl config use-context demo
           echo "DT_ENV_APPS=$DT_ENV_APPS" >> "$GITHUB_ENV"
 
@@ -66,7 +66,7 @@ jobs:
           QUERY_OUT="$(dtctl query -A 'fetch logs | limit 1' 2>&1)" || {
             echo "$QUERY_OUT"
             if echo "$QUERY_OUT" | grep -Eqi "401|unauthorized|forbidden"; then
-              echo "dtctl auth check failed: DT_API_TOKEN is unauthorized for DQL."
+              echo "dtctl auth check failed: DT_PLATFORM_TOKEN is unauthorized for DQL."
               echo "Use a Dynatrace Platform token for DT_ENV_APPS and include at least storage:logs:read."
             fi
             exit 1
