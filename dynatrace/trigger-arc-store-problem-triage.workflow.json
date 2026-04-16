@@ -1,0 +1,132 @@
+{
+  "id": "0702303e-080b-4938-a6e9-a1aeb6abfcc1",
+  "title": "Trigger Arc Store Problem Triage",
+  "description": "",
+  "actor": "751d200c-f351-4478-b353-b6d7039b7af9",
+  "owner": "751d200c-f351-4478-b353-b6d7039b7af9",
+  "ownerType": "USER",
+  "isPrivate": false,
+  "schemaVersion": 4,
+  "trigger": {
+    "eventTrigger": {
+      "isActive": true,
+      "triggerConfiguration": {
+        "type": "davis-problem",
+        "value": {
+          "categories": {
+            "error": true
+          },
+          "entityTags": {},
+          "customFilter": "",
+          "analysisReady": true,
+          "onProblemClose": false,
+          "entityTagsMatch": "all"
+        }
+      }
+    }
+  },
+  "result": null,
+  "type": "STANDARD",
+  "input": {},
+  "hourlyExecutionLimit": 1000,
+  "guide": null,
+  "tasks": {
+    "create_issue": {
+      "name": "create_issue",
+      "input": {
+        "body": "{{result(\"js_github_issue_description\")}}",
+        "owner": "joshDynatrace",
+        "title": "Defect Found in dtctl-ai-bug-demo",
+        "repository": "dtctl-ai-bug-demo",
+        "connectionId": "vu9U3hXa3q0AAAABAClhcHA6ZHluYXRyYWNlLmdpdGh1Yi5jb25uZWN0b3I6Y29ubmVjdGlvbgAGdGVuYW50AAZ0ZW5hbnQAJDM5MjcyZmM4LTgyYjMtM2NjYy1iOTZiLTM0OTZjYWZiZjAwM77vVN4V2t6t"
+      },
+      "action": "dynatrace.github.connector:create-issue",
+      "position": {
+        "x": 0,
+        "y": 3
+      },
+      "conditions": {
+        "states": {
+          "js_github_issue_description": "SUCCESS"
+        }
+      },
+      "description": "Creates an issue",
+      "predecessors": [
+        "js_github_issue_description"
+      ]
+    },
+    "dql_query_get_logs": {
+      "name": "dql_query_get_logs",
+      "input": {
+        "query": "fetch logs, from: now()-10min\n| filter k8s.namespace.name == \"arc-store\"\n| filter loglevel == \"ERROR\" OR contains(lower(content), \"exception\") OR contains(lower(content), \"error\")\n| sort timestamp desc\n| fields timestamp, k8s.pod.name, content, loglevel\n| limit 10"
+      },
+      "action": "dynatrace.automations:execute-dql-query",
+      "position": {
+        "x": 0,
+        "y": 1
+      },
+      "description": "Make use of Dynatrace Grail data in your workflow.",
+      "predecessors": []
+    },
+    "js_build_annotation_event": {
+      "name": "js_build_annotation_event",
+      "input": {
+        "script": "import { execution } from \"@dynatrace-sdk/automation-utils\";\n\nexport default async function ({ executionId }) {\n  const exe = await execution();\n  const event = exe.params.event ?? {};\n\n  const getFirstValue = (key: string) => {\n    const value = event[key];\n    return Array.isArray(value) ? value.find(v => v != null) : value;\n  };\n\n  const nowInUTC = Date.now();\n\n  // Prior step output (step id: create_issue)\n  const createIssueOutput = await exe.result(\"create_issue\");\n  console.log(\"createIssueOutput:\", JSON.stringify(createIssueOutput, null, 2));\n  const issue = createIssueOutput.issue ?? createIssueOutput;\n\n  // Use browser URL for annotation link\n  const issueUrl = issue.html_url ?? issue.url ?? \"\";\n  console.log(\"url: \" + issueUrl)\n\n  return {\n    eventType: 'CUSTOM_ANNOTATION',\n    title: 'Created GitHub issue',\n    startTime: nowInUTC,\n    endTime: nowInUTC,\n    properties: {\n      'annotation.source': 'GitHub',\n      'annotation.id': '' + Math.random(),\n      'annotation.url': issueUrl,      \n      'annotation.problem_ids': getFirstValue(\"event.id\"),\n      'dt.event.description': 'Arc store agentic triage workflow kicked off. Automatic GitHub issue created:',\n    }\n  };\n}"
+      },
+      "action": "dynatrace.automations:run-javascript",
+      "position": {
+        "x": 0,
+        "y": 4
+      },
+      "conditions": {
+        "states": {
+          "create_issue": "SUCCESS"
+        }
+      },
+      "description": "Run custom JavaScript code.",
+      "predecessors": [
+        "create_issue"
+      ]
+    },
+    "js_create_annotation_event": {
+      "name": "js_create_annotation_event",
+      "input": {
+        "script": "// optional import of sdk modules\nimport { execution } from '@dynatrace-sdk/automation-utils';\nimport { eventsClient } from \"@dynatrace-sdk/client-classic-environment-v2\";\n\nexport default async function () {\n  // your code goes here\n  // e.g. get the current execution\n  const ex = await execution();\n  const input = ex.input\n  const event = await ex.result(\"js_build_annotation_event\");\n  console.log(\"Event payload:\", JSON.stringify(event, null, 2));\n  const data = await eventsClient.createEvent({\n    body: event,\n  });\n  console.log(data);\n  if (data.eventIngestResults[0].status !== \"OK\") {\n    throw new Error(\"Event ingest failed! See logs!\");\n  }\n  return data;\n}"
+      },
+      "action": "dynatrace.automations:run-javascript",
+      "position": {
+        "x": 0,
+        "y": 5
+      },
+      "conditions": {
+        "states": {
+          "js_build_annotation_event": "SUCCESS"
+        }
+      },
+      "description": "Run custom JavaScript code.",
+      "predecessors": [
+        "js_build_annotation_event"
+      ]
+    },
+    "js_github_issue_description": {
+      "name": "js_github_issue_description",
+      "input": {
+        "script": "import { execution } from \"@dynatrace-sdk/automation-utils\";\n\nexport default async function ({ executionId }) {\n  const exe = await execution(executionId);\n  const dql = await exe.result(\"dql_query_get_logs\");\n  const event = exe.params.event ?? {};\n\n  const getFirstValue = (key: string) => {\n    const value = event[key];\n    return Array.isArray(value) ? value.find(v => v != null) : value;\n  };\n\n  const records = Array.isArray(dql?.records) ? dql.records : [];\n\n  const lines = records.map((r, i) => {\n    const ts = r?.timestamp ?? \"unknown-time\";\n    const pod = r?.[\"k8s.pod.name\"] ?? \"unknown-pod\";\n    const lvl = r?.loglevel ?? \"UNKNOWN\";\n    const msg = String(r?.content ?? \"\").trim();\n    return `${i + 1}. [${ts}] [${lvl}] [${pod}]\\n${msg}`;\n  });\n\n  const stackText = lines.length ? lines.join(\"\\n\\n\") : \"No matching error logs found.\";\n\n  const issueBody =\n`## Issue detected in the Arc Store\n\nProblem: ${getFirstValue(\"display_id\") ?? \"unknown\"}\nName: ${getFirstValue(\"event.name\") ?? \"unknown\"}\nEntity: ${getFirstValue(\"affected_entity_names\") ?? getFirstValue(\"dt.source_entity\") ?? \"unknown\"}\n\n### Error logs / stack trace\n${stackText}\n`;\n\n // GitHub issue body max is large, but trim to be safe\n return issueBody.slice(0, 60000);\n}"
+      },
+      "action": "dynatrace.automations:run-javascript",
+      "position": {
+        "x": 0,
+        "y": 2
+      },
+      "conditions": {
+        "states": {
+          "dql_query_get_logs": "SUCCESS"
+        }
+      },
+      "description": "Run custom JavaScript code.",
+      "predecessors": [
+        "dql_query_get_logs"
+      ]
+    }
+  }
+}
