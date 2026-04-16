@@ -13,7 +13,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080")
 PRODUCTS_URL = f"{BACKEND_URL}/api/products"
 ORDERS_URL   = f"{BACKEND_URL}/api/orders"
 TAX_PREVIEW_URL = f"{ORDERS_URL}/tax-preview"
-DELAY        = float(os.getenv("DELAY_SECONDS", "10"))
+DELAY        = float(os.getenv("DELAY_SECONDS", "15"))
 
 STATES = ["CA", "NY", "TX"]
 TARGET_PRODUCT_NAME = os.getenv("TARGET_PRODUCT_NAME", "Arc Display")
