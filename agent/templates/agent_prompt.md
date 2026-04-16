@@ -36,13 +36,15 @@ Live Debugger documentation context:
 Live Debugger command playbook (follow this order):
 1. Bootstrap command catalog first and use only commands/flags that exist in the catalog output.
 2. Parse stack trace frames from the issue and map them to candidate breakpoint targets.
-3. Verify target entities and identifiers before setting breakpoints (prefer exact IDs in agent mode).
-4. Set temporary breakpoints for the top failing frame first, then one upstream caller frame.
-5. If you need the value of a specific variable, set the breakpoint at least one executable line after that variable is declared or assigned.
-6. Capture snapshots for at least one failing execution and collect local variable values, method inputs, and return values.
-7. Query and summarize the captured snapshot data, explicitly highlighting null values and the object path that produced the null dereference.
-8. Remove temporary breakpoints after evidence collection.
-9. Cross-check snapshot evidence with log evidence and only then produce root cause and fix strategy.
+3. Before setting any breakpoint, set a Live Debugger filter for the target namespace. Example: `dtctl update breakpoint --filters k8s.namespace.name:arc-store`.
+4. Verify target entities and identifiers before setting breakpoints (prefer exact IDs in agent mode).
+5. When creating a breakpoint, always use the full repository-relative file path and line number. Example: `dtctl create breakpoint backend/src/main/java/com/arcstore/service/OrderService.java:40`.
+6. After the filter is set, add temporary breakpoints for the top failing frame first, then one upstream caller frame if needed.
+7. In the case of a NullPointerException, it makes sense to set the breakpoint one executable line before the NullPointException occurs.
+8. Capture snapshots for at least one failing execution and collect local variable values, method inputs, and return values.
+9. Query and summarize the captured snapshot data in JSON format. Example: `dtctl query "fetch application.snapshots | sort timestamp desc | limit 5" --decode-snapshots=full -o json`. Explicitly highlight null values and the object path that produced the null dereference.
+10. Remove temporary breakpoints after evidence collection.
+11. Cross-check snapshot evidence with log evidence and only then produce root cause and fix strategy.
 
 Evidence requirements:
 1. Include at least one concrete variable-value proof from a Live Debugger snapshot. Show the variable values captured.
