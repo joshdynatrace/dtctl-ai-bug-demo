@@ -1,4 +1,4 @@
-# Arc Store
+# Arc Store Agentic Debugging Workflow Demo
 
 ![Agent dtctl workflow](image/agent-dtctl-workflow.png)
 
