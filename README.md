@@ -1,11 +1,14 @@
 # Arc Store
 
-A demo e-commerce store with a React frontend, Spring Boot backend, and a Python load generator.
+![Agent dtctl workflow](image/agent-dtctl-workflow.png)
+
+A demo e-commerce store with a React frontend, Spring Boot backend, a Python load generator, and an AI investigation agent workflow powered by dtctl and Dynatrace.
 
 ## Project layout
 
 ```
 arc-store/
+├── agent/            AI investigation orchestrator + prompt templates
 ├── backend/          Spring Boot 3.2 + H2
 ├── frontend/         React (Vite) + nginx
 ├── load-generator/   Python script
