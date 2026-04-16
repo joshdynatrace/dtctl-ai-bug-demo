@@ -51,6 +51,9 @@ Evidence requirements:
 2. Include the stack frame and method context where the null value was observed.
 3. Include one log or trace corroboration that matches the same failing request path/time window.
 
+Pull request creation:
+{{PR_CREATION_INSTRUCTIONS}}
+
 Output JSON schema:
 {
   "root_cause": "string",
@@ -73,5 +76,8 @@ Output JSON schema:
     "string"
   ],
   "pr_title": "string",
-  "pr_body_markdown": "string"
+  "pr_body_markdown": "string",
+  "pr_url": "string (optional: include if PR was created)",
+  "pr_number": "integer (optional: GitHub PR number if PR was created)",
+  "branch": "string (optional: branch name if PR was created)"
 }

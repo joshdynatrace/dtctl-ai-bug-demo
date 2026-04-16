@@ -59,12 +59,28 @@ def build_agent_prompt(issue_ctx, investigation_state):
         "Use Dynatrace Live Debugger commands through dtctl when needed. "
         "Collect concrete variable-value evidence before finalizing."
     )
+    
+    # Determine if agent should create a PR
+    auto_pr = _env_flag("AUTO_PR", False)
+    if auto_pr:
+        pr_instructions = (
+            f"After finalizing the root cause and fix, you MUST create a pull request:\n"
+            f"1. Create a new branch named: agent/fix-{issue_ctx.get('issue_number')}\n"
+            f"2. Make the necessary code changes based on your analysis\n"
+            f"3. Commit the changes with a descriptive message including the root cause\n"
+            f"4. Push the branch to GitHub\n"
+            f"5. Create a PR with the fix plan summary in the description\n"
+            f"Include the PR URL, branch name, and PR number in your final response."
+        )
+    else:
+        pr_instructions = "PR creation is disabled (AUTO_PR not set)."
 
     return (
         prompt_template.replace("{{ISSUE_JSON}}", json.dumps(issue_ctx, indent=2))
         .replace("{{EVIDENCE_JSON}}", json.dumps(investigation_state, indent=2))
         .replace("{{DTCTL_SKILL_CONTEXT}}", skill_text)
         .replace("{{DTCTL_LIVE_DEBUGGER_CONTEXT}}", live_debugger_text)
+        .replace("{{PR_CREATION_INSTRUCTIONS}}", pr_instructions)
     )
 
 
@@ -150,18 +166,28 @@ def run_investigation(issue_ctx):
 
 
 def maybe_create_pr(issue_ctx, fix_plan):
-    auto_pr = os.getenv("AUTO_PR", "false").lower() == "true"
+    """
+    Validates that the agent created a PR if AUTO_PR is enabled.
+    The agent is responsible for actually creating the PR; this function
+    just extracts and validates the result from the fix_plan.
+    """
+    auto_pr = _env_flag("AUTO_PR", False)
     if not auto_pr:
         return {"status": "skipped", "reason": "AUTO_PR=false"}
 
-    # Skeleton: implement branch/commit/pr creation in your preferred way.
-    return {
-        "status": "created",
-        "pr_url": "https://github.com/OWNER/REPO/pull/123",
-        "branch": f"agent/fix-{issue_ctx.get('issue_number')}",
-        "title": f"Fix NPE for issue #{issue_ctx.get('issue_number')}",
-        "summary": fix_plan.get("root_cause", ""),
-    }
+    # Check if the agent included PR information in the fix_plan
+    if "pr_url" in fix_plan and fix_plan.get("pr_url"):
+        return {
+            "status": "created",
+            "pr_url": fix_plan.get("pr_url"),
+            "pr_number": fix_plan.get("pr_number"),
+            "branch": fix_plan.get("branch"),
+        }
+    else:
+        return {
+            "status": "pending",
+            "reason": "Agent did not include PR details in response. This may indicate PR creation succeeded silently or encountered an issue."
+        }
 
 
 def persist(name, data):
