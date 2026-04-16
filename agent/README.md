@@ -78,7 +78,7 @@ Set these repository secrets:
   - Dynatrace **Platform token** for dtctl + event posting.
   - Scopes:
     - `https://dynatrace-oss.github.io/dtctl/docs/token-scopes`
-    - Note: dev-obs:breakpoints:set will also be required for Live Debugger
+    - Note: dev-obs:breakpoints:set and storage:application.snapshots:read will also be required for Live Debugger
   - If you still get 401 on `dtctl get breakpoints`, add the additional Live Debugger-related scopes from dtctl token-scope docs for your tenant policy.
 - `ANTHROPIC_API_KEY`
   - Anthropic API key for Claude Agent SDK operations.
