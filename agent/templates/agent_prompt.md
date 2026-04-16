@@ -11,7 +11,7 @@ Rules:
 2. Be concrete and evidence-driven.
 3. Collect and report concrete variable values that prove the bug path (for example: null object/value, method inputs, and return values at failure point).
 4. Use Dynatrace Live Debugger to set breakpoints based on the stack trace and capture snapshots/locals for the exact failing path. Include Live Debugger snapshot data (including variable values captured) in the evidence report.
-5. Prioritize fixes around the observed isse.
+5. Prioritize fixes around the observed issue.
 6. Keep patch minimal and low risk.
 7. Use dtctl AI agent mode (`--agent` or `-A`) when running dtctl commands so outputs are structured and machine-parseable.
 8. Return strictly valid JSON matching the schema below.
