@@ -75,11 +75,14 @@ Set these repository secrets:
   - Used by the Events API to post investigation results back to the Dynatrace problem.
   - `DT_ENV_APPS` (used by dtctl) is derived from this automatically in CI.
 - `DT_PLATFORM_TOKEN`
-  - Dynatrace **Platform token** for dtctl + event posting.
+  - Dynatrace **Platform token** for dtctl operations.
   - Scopes:
     - `https://dynatrace-oss.github.io/dtctl/docs/token-scopes`
     - Note: dev-obs:breakpoints:set and storage:application.snapshots:read will also be required for Live Debugger
   - If you still get 401 on `dtctl get breakpoints`, add the additional Live Debugger-related scopes from dtctl token-scope docs for your tenant policy.
+- `DT_API_TOKEN`
+  - Dynatrace **API token** used only for posting Events API updates (`/api/v2/events/ingest`).
+  - Must include Events ingest/write permissions for your tenant policy.
 - `ANTHROPIC_API_KEY`
   - Anthropic API key for Claude Agent SDK operations.
 
@@ -122,8 +125,8 @@ Useful optional runtime environment variables:
 
 Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 
-- `DT_ENV_LIVE` / `DT_ENV_APPS` / `DT_PLATFORM_TOKEN`
-  - Dynatrace environment URLs and auth. `DT_ENV_LIVE` is used by the Events API; `DT_ENV_APPS` is used by dtctl.
+- `DT_ENV_LIVE` / `DT_ENV_APPS` / `DT_PLATFORM_TOKEN` / `DT_API_TOKEN`
+  - Dynatrace environment URLs and auth. `DT_ENV_APPS` + `DT_PLATFORM_TOKEN` are used by dtctl; `DT_ENV_LIVE` + `DT_API_TOKEN` are used by the Events API.
 - `DTCTL_CONTEXT=demo`
   - Named context for dtctl operations.
 - `ANTHROPIC_API_KEY`
@@ -216,6 +219,7 @@ Manual setup (if you prefer):
 export DT_ENV_LIVE="https://abc12345.live.dynatrace.com"
 export DT_ENV_APPS="https://abc12345.apps.dynatrace.com"
 export DT_PLATFORM_TOKEN="dt0s16.XXXXXXXX.YYYYYYYY"
+export DT_API_TOKEN="dt0c01.XXXXXXXX.YYYYYYYY"
 export GITHUB_TOKEN="ghp_xxx"
 export GITHUB_REPOSITORY="owner/repo"
 export GITHUB_EVENT_PATH="/path/to/issue-event.json"
@@ -231,6 +235,8 @@ python agent/orchestrator.py
   - Ensure issue body includes `Problem: P-123456`.
 - dtctl auth errors
   - Verify `DT_ENV_LIVE` uses a `.live.dynatrace.com` URL and `DT_PLATFORM_TOKEN` is valid with the required platform scopes.
+- Events API 401 (`Token Authentication failed`)
+  - Verify `DT_API_TOKEN` is set and is an API token with permissions for `/api/v2/events/ingest`.
 - Agent SDK runner fails
   - Ensure `ANTHROPIC_API_KEY` is set and valid.
   - Check that `claude-agent-sdk` is installed: `pip install claude-agent-sdk`.

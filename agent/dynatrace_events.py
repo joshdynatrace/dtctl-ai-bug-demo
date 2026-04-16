@@ -20,7 +20,7 @@ def _resolve_dynatrace_env():
 
 
 def _resolve_dynatrace_token():
-    return os.getenv("DT_PLATFORM_TOKEN")
+    return os.getenv("DT_API_TOKEN")
 
 
 def _events_ingest_url(dt_env):
@@ -32,7 +32,10 @@ def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):
     dt_token = _resolve_dynatrace_token()
 
     if not dt_env or not dt_token:
-        return {"status": "skipped", "reason": "missing Dynatrace env/token"}
+        return {
+            "status": "skipped",
+            "reason": "missing DT_ENV_LIVE or DT_API_TOKEN for Events API",
+        }
 
     if ".live.dynatrace.com" not in dt_env:
         return {
