@@ -19,7 +19,8 @@ RUN pip install --no-cache-dir requests pyyaml claude-agent-sdk
 RUN npm install -g @anthropic-ai/claude-code
 
 # Run as non-root so Claude SDK bypass-permissions mode is allowed.
-RUN useradd --create-home --shell /bin/sh agent
+RUN groupadd --gid 1001 agent \
+    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/sh agent
 USER agent
 ENV HOME="/home/agent"
 ENV PATH="/home/agent/.local/bin:/usr/local/bin:$PATH"
