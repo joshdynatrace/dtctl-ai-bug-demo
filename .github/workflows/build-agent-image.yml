@@ -17,10 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set image name
-        id: image
-        run: echo "name=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/dtctl-agent:latest" >> "$GITHUB_OUTPUT"
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -34,4 +30,4 @@ jobs:
           context: .
           file: Dockerfile.agent
           push: true
-          tags: ${{ steps.image.outputs.name }}
+          tags: ghcr.io/${{ github.repository_owner }}/dtctl-agent:latest
