@@ -96,14 +96,23 @@ def run_agent_command(prompt_file_path):
     runner = SCRIPT_DIR / "agent_sdk_runner.py"
     trace_enabled = _env_flag("AGENT_TRACE", False)
     if trace_enabled:
-        proc = subprocess.run(
+        # Stream stderr live so [agent-trace] events show up in GitHub Actions logs in real time.
+        proc = subprocess.Popen(
             [sys.executable, str(runner), prompt_file_path],
             stdout=subprocess.PIPE,
-            stderr=None,
+            stderr=subprocess.PIPE,
             text=True,
+            bufsize=1,
             cwd=str(SCRIPT_DIR),
         )
-        stderr_text = ""
+        stderr_lines = []
+        if proc.stderr is not None:
+            for line in proc.stderr:
+                stderr_lines.append(line)
+                print(line, end="", file=sys.stderr)
+        stdout_text = proc.stdout.read() if proc.stdout is not None else ""
+        returncode = proc.wait()
+        stderr_text = "".join(stderr_lines).strip()
     else:
         proc = subprocess.run(
             [sys.executable, str(runner), prompt_file_path],
@@ -111,17 +120,19 @@ def run_agent_command(prompt_file_path):
             text=True,
             cwd=str(SCRIPT_DIR),
         )
+        stdout_text = proc.stdout
         stderr_text = proc.stderr.strip()
+        returncode = proc.returncode
 
-    if proc.returncode != 0:
-        error_text = stderr_text or f"Runner failed with exit code {proc.returncode}."
+    if returncode != 0:
+        error_text = stderr_text or f"Runner failed with exit code {returncode}."
         return {
             "ok": False,
             "error": error_text,
             "result": _default_fix_plan(error_text),
         }
     try:
-        parsed = json.loads(proc.stdout.strip())
+        parsed = json.loads((stdout_text or "").strip())
         if isinstance(parsed, dict):
             return {"ok": True, "error": "", "result": parsed}
         return {

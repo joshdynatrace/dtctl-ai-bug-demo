@@ -55,7 +55,7 @@ class TraceLogger:
             **data,
         }
         line = json.dumps(payload, ensure_ascii=True)
-        print(f"[agent-trace] {line}", file=sys.stderr)
+        print(f"[agent-trace] {line}", file=sys.stderr, flush=True)
         if self._handle:
             self._handle.write(line + "\n")
             self._handle.flush()
