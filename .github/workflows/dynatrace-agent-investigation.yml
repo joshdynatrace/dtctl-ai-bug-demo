@@ -16,6 +16,11 @@ jobs:
       contains(join(github.event.issue.labels.*.name, ','), 'dynatrace-problem')
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/dtctl-agent:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     env:
       PYTHONUNBUFFERED: "1"
@@ -30,22 +35,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Python deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests pyyaml claude-agent-sdk
-
-      - name: Install dtctl
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/dynatrace-oss/dtctl/main/install.sh | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          dtctl version || true
 
       - name: Configure dtctl auth
         run: |
