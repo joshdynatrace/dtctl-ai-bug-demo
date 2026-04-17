@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - Dockerfile.agent
+      - agent/Dockerfile
 
 permissions:
   contents: read
@@ -28,6 +28,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.agent
+          file: agent/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/dtctl-agent:latest
