@@ -38,7 +38,7 @@ jobs:
 
       - name: Configure dtctl auth
         run: |
-          DT_ENV_APPS="${DT_ENV_LIVE/.live./.apps.}"
+          DT_ENV_APPS="$(printf '%s' "$DT_ENV_LIVE" | sed 's/\.live\./.apps./')"
           dtctl config set-context demo \
             --environment "$DT_ENV_APPS" \
             --token-ref demo-token
@@ -49,7 +49,7 @@ jobs:
 
       - name: Verify dtctl non-interactive auth
         run: |
-          set -euo pipefail
+          set -eu
           dtctl commands --brief -o json >/dev/null
 
           # Validate token + scopes with a real data-plane call.
