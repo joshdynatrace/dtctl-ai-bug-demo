@@ -9,13 +9,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dtctl
-RUN curl -fsSL https://raw.githubusercontent.com/dynatrace-oss/dtctl/main/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
+RUN curl -fsSL https://raw.githubusercontent.com/dynatrace-oss/dtctl/main/install.sh | sh \
+    && install -m 0755 /root/.local/bin/dtctl /usr/local/bin/dtctl
 
 # Install Python dependencies
 RUN pip install --no-cache-dir requests pyyaml claude-agent-sdk
 
 # Install Claude Code CLI used by claude-agent-sdk runtime.
 RUN npm install -g @anthropic-ai/claude-code
+
+# Run as non-root so Claude SDK bypass-permissions mode is allowed.
+RUN useradd --create-home --shell /bin/sh agent
+USER agent
+ENV HOME="/home/agent"
+ENV PATH="/home/agent/.local/bin:/usr/local/bin:$PATH"
 
 WORKDIR /github/workspace

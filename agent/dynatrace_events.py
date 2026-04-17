@@ -82,13 +82,21 @@ def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):
     props["service"] = service_name or "unknown-service"
     props["evidence.query.count"] = str(evidence_summary.get("query_count", 0))
     props["evidence.debugger.count"] = str(evidence_summary.get("debugger_count", 0))
-    props["evidence.query.names"] = ",".join(
-        [item.get("name", "") for item in evidence_summary.get("queries", [])]
+    query_names = ",".join(
+        [item.get("name", "") for item in evidence_summary.get("queries", []) if item.get("name", "")]
     )
-    props["evidence.debugger.commands"] = _safe_text(
-        "; ".join([item.get("cmd", "") for item in evidence_summary.get("debugger", [])]),
+    debugger_commands = _safe_text(
+        "; ".join([item.get("cmd", "") for item in evidence_summary.get("debugger", []) if item.get("cmd", "")]),
         max_len=800,
     )
+    if query_names:
+        props["evidence.query.names"] = query_names
+    else:
+        props.pop("evidence.query.names", None)
+    if debugger_commands:
+        props["evidence.debugger.commands"] = debugger_commands
+    else:
+        props.pop("evidence.debugger.commands", None)
     props["evidence.summary"] = _safe_text(json.dumps(evidence_summary), max_len=1800)
 
     url = _events_ingest_url(dt_env)
