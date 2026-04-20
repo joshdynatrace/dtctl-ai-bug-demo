@@ -1,7 +1,6 @@
 {
-  "eventType": "CUSTOM_INFO",
+  "eventType": "CUSTOM_ANNOTATION",
   "title": "AI investigation update for Problem P-000000",
-  "timeoutMinutes": 60,
   "properties": {
     "source": "github-agent-demo",
     "status": "pr_opened",
