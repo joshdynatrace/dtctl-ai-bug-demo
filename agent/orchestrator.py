@@ -254,9 +254,9 @@ def summarize_evidence_from_fix_plan(fix_plan):
 
 
 def main():
-    # ========================================================================
-    # 1. INTAKE: Parse GitHub issue and extract Dynatrace Problem ID
-    # ========================================================================
+    # ===============================================================================
+    # 1. INTAKE: Parse GitHub issue and extract Dynatrace Problem ID and Event ID
+    # ===============================================================================
     event = read_github_event()
     issue = event.get("issue", {})
     issue_body = issue.get("body", "") or ""
