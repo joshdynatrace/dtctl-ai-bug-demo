@@ -1,5 +1,6 @@
 import json
 import os
+import random
 from pathlib import Path
 
 import requests
@@ -68,9 +69,9 @@ def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):
     props["confidence"] = str(fix_plan.get("confidence", ""))
     props["root.cause"] = fix_plan.get("root_cause", "")
     if pr_url:
-        props["pr.url"] = pr_url
+        props["annotation.url"] = pr_url
     else:
-        props.pop("pr.url", None)
+        props.pop("annotation.url", None)
     if pr_branch:
         props["pr.branch"] = pr_branch
     else:
@@ -97,6 +98,12 @@ def post_dynatrace_event(issue_ctx, fix_plan, pr_info, evidence_summary):
         props["evidence.debugger.commands"] = debugger_commands
     else:
         props.pop("evidence.debugger.commands", None)
+    props["annotation.id"] = str(random.random())
+    event_id = issue_ctx.get("event_id", "")
+    if event_id:
+        props["annotation.problem_ids"] = event_id
+    else:
+        props.pop("annotation.problem_ids", None)
     props["evidence.summary"] = _safe_text(json.dumps(evidence_summary), max_len=1800)
 
     url = _events_ingest_url(dt_env)

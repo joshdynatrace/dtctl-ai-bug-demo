@@ -48,6 +48,14 @@ def extract_problem_id(issue_body, issue_title=""):
     return None
 
 
+def extract_event_id(issue_body, issue_title=""):
+    source = f"{issue_title}\n{issue_body}"
+    match = re.search(r"EventID:\s*(-?\d+_\d+V2)", source or "", re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return None
+
+
 def build_agent_prompt(issue_ctx, investigation_state):
     template_path = SCRIPT_DIR / "templates" / "agent_prompt.md"
     prompt_template = template_path.read_text(encoding="utf-8")
@@ -259,6 +267,7 @@ def main():
         "issue_title": issue.get("title", ""),
         "issue_body": issue_body,
         "problem_id": extract_problem_id(issue_body, issue.get("title", "")),
+        "event_id": extract_event_id(issue_body, issue.get("title", "")),
         "service_name": os.getenv("DEFAULT_SERVICE_NAME", ""),
         "repo": os.getenv("GITHUB_REPOSITORY", ""),
         "run_id": os.getenv("GITHUB_RUN_ID", ""),
