@@ -2,13 +2,94 @@
 
 --8<-- "snippets/bizevent-getting-started.js"
 
-TODO
+This guide walks you through everything needed to run the Arc Store agentic debugging demo from scratch.
 
-## Sample Named Snippet
-``` {"name": "send log to collector"}
-python /workspaces/$RepositoryName/syslog_generator.py --host 127.0.0.1 --port 54526 --file /workspaces/$RepositoryName/sample_log_lines.log --count 1
+## Prerequisites
+
+The following will be used:
+
+- A **Dynatrace tenant** with Live Debugger enabled
+- A **Kubernetes cluster** — this guide uses [Kind](https://kind.sigs.k8s.io/){target=_blank} 
+- **kubectl** installed and configured in codespaces
+- An **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com/){target=_blank}
+
+---
+
+## 1. Configure Dynatrace
+
+### Enable Live Debugger
+
+In your Dynatrace tenant, make sure the [Live Debugger](https://docs.dynatrace.com/docs/observe/application-observability/live-debugger) is enabled.
+
+### Configure OpenPipeline
+
+Create an OpenPipeline processing rule that matches error events from the `arc-store` namespace or thea arc-backend container and creates a Davis ERROR_EVENT.
+
+For example:
+```bash
+matchesPhrase(k8s.container.name, "arc-backend")
+and
+matchesPhrase(content, "NullPointerException")
 ```
 
+### Create a Workflow
+
+Create a Dynatrace Workflow that:
+
+1. Triggers on **Problem opened** events from Arc Store services
+2. Creates a GitHub issue in your forked repository via the GitHub action or an HTTP request to the GitHub Issues API
+
+The issue must meet these requirements for the agent to pick it up:
+
+- **Title** must contain `Defect Found`
+- **Body** must include the Problem ID in the format `Problem: P-XXXXXX`
+
+You can import the workflow in the project under `Dynatrace/trigger-arc-store-problem-triage.workflow.json`
+
+---
+
+## 5. Configure GitHub Secrets
+
+Go to **Repo Settings → Secrets and variables → Actions** and add the following secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `DT_ENV_LIVE` | Dynatrace live environment URL, e.g. `https://abc12345.live.dynatrace.com` |
+| `DT_PLATFORM_TOKEN` | Dynatrace Platform token for dtctl — see scopes below |
+| `DT_API_TOKEN` | Dynatrace API token for the Events ingest API (`/api/v2/events/ingest`) |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude Agent SDK |
+
+### DT_PLATFORM_TOKEN Scopes
+
+Your platform token requires at least these scopes to allow dtctl to query logs, traces, and the Live Debugger:
+
+- `storage:logs:read`
+- `storage:metrics:read`
+- `storage:traces:read`
+- `dev-obs:breakpoints:set`
+- `storage:application.snapshots:read`
+
+See the full list at [dtctl token-scope docs](https://dynatrace-oss.github.io/dtctl/docs/token-scopes){target=_blank}.
+
+!!! note "DT_ENV_APPS is derived automatically"
+    The GitHub Actions workflow converts `DT_ENV_LIVE` (e.g. `https://abc12345.live.dynatrace.com`) to `DT_ENV_APPS` (e.g. `https://abc12345.apps.dynatrace.com`) — no separate secret is required.
+
+---
+
+## 6. Set GitHub Actions Permissions
+
+Go to **Settings → Actions → General → Workflow permissions** and select **Read and write permissions**.
+
+This allows the agent workflow to:
+
+- Post comments on issues
+- Create fix branches
+- Open pull requests
+
+---
+
+Next you're ready to start the codespaces.
+
 <div class="grid cards" markdown>
-- [Click Here to Continue :octicons-arrow-right-24:](PLACEHOLDER.md)
+- [Codespaces :octicons-arrow-right-24:](codespaces.md)
 </div>

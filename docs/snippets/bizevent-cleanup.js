@@ -1,5 +1,5 @@
 <script>
-var CURRENT_PAGE = "8. cleanup";
+var CURRENT_PAGE = "7. cleanup";
 
 document.addEventListener('DOMContentLoaded', function() {  
   dynatrace.sendBizEvent('page_load', {"page": CURRENT_PAGE});

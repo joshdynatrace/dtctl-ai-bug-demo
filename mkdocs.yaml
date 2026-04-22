@@ -1,19 +1,22 @@
-site_name: "Dynatrace Observability Lab: PLACEHOLDER"
+site_name: "Arc Store: Agentic Debugging Demo"
 repo_name: "View Code on GitHub"
-repo_url: "https://github.com/dynatrace/PLACEHOLDER"
+repo_url: "https://github.com/joshdynatrace/dtctl-ai-bug-demo"
 nav:
   - '1. About': index.md
   - '2. Getting Started': getting-started.md
-  # ...
-  - '8. Cleanup': cleanup.md
-  - '9. Resources': resources.md
-  - "10. What's Next?": whats-next.md
+  - '3. Codespaces': codespaces.md
+  - '4. Phase 1: Detection': phase-1-detection.md
+  - '5. Phase 2: Investigation': phase-2-investigation.md
+  - '6. Phase 3: Remediation': phase-3-remediation.md
+  - '7. Cleanup': cleanup.md
+  - '8. Resources': resources.md
+  - "9. What's Next?": whats-next.md
 theme:
   name: material
   custom_dir: docs/overrides
   features:
     - content.code.copy
-    
+
   palette:
   # Palette toggle for automatic mode
   - media: "(prefers-color-scheme)"
@@ -23,7 +26,8 @@ theme:
 
   # Palette toggle for light mode
   - media: "(prefers-color-scheme: light)"
-    scheme: default 
+    scheme: default
+    primary: deep-purple
     toggle:
       icon: material/brightness-7
       name: Switch to dark mode
@@ -31,6 +35,7 @@ theme:
   # Palette toggle for dark mode
   - media: "(prefers-color-scheme: dark)"
     scheme: slate
+    primary: deep-purple
     toggle:
       icon: material/brightness-4
       name: Switch to system preference
