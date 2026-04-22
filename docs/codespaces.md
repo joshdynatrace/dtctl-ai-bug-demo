@@ -46,7 +46,7 @@ The load generator starts automatically and produces continuous traffic against 
 
 ## 4. Troubleshooting
 
-### Exposing the Arc Frontend locall
+### Exposing the Arc Frontend locally
 
 Make sure to run:
 

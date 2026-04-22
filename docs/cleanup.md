@@ -14,6 +14,8 @@ To delete the Kind cluster entirely:
 kind delete cluster
 ```
 
+Or simply delete your codespace is you started it that way.
+
 ### Dynatrace
 
 Deactivate or delete the API tokens you created in your Dynatrace tenant:
@@ -28,5 +30,5 @@ If you no longer need the Anthropic API key used for this demo, revoke it at [co
 --8<-- "snippets/feedback-invitation.md"
 
 <div class="grid cards" markdown>
-- [What's Next? :octicons-arrow-right-24:](whats-next.md)
+- [Resources :octicons-arrow-right-24:](resources.md)
 </div>
