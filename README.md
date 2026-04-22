@@ -4,6 +4,41 @@
 
 A demo e-commerce store with a React frontend, Spring Boot backend, a Python load generator, and an AI investigation agent workflow powered by dtctl and Dynatrace.
 
+## Quickstart
+
+Here are some short quickstart details to get going as you spin up the codespaces. More specific details are in the link at the bottom of the page.
+
+1) To spin up the environment with GitHub Codespaces, go to **Code > Codespaces > New with options**, or directly by [clicking here](https://codespaces.new/joshdynatrace/dtctl-ai-bug-demo).
+
+   > **Recommended:** 4-core machine (16 GB RAM) — the Kind cluster runs the full Arc Store stack inside the codespace.
+
+   You'll need:
+   - A Dynatrace **Environment ID** — the subdomain from your tenant URL, e.g. `abc12345` from `https://abc12345.live.dynatrace.com`
+   - A Dynatrace **Environment Type** — typically `live` (or `sprint` / `dev`)
+   - A Dynatrace **Operator Token** (`DT_API_TOKEN`) — used by the Dynatrace Operator to manage the lifecycle of all Dynatrace components in the cluster
+   - A Dynatrace **Data Ingest Token** (`DT_DATA_INGEST_TOKEN`) with the following scopes:
+     - `metrics.ingest`
+     - `logs.ingest`
+     - `openTelemetryTrace.ingest`
+
+2) The codespace will automatically create a [Kind](https://kind.sigs.k8s.io/) Kubernetes cluster, deploy the Arc Store application, and install the Dynatrace Operator. Verify everything is running:
+
+   ```sh
+   kubectl get pods -n arc-store
+   ```
+   ```sh
+   kubectl get pods -n dynatrace
+   ```
+
+Let's Get Started...
+
+## [🛒 🤖 Start the AI bug investigation here!](https://joshdynatrace.github.io/dtctl-ai-bug-demo/)
+
+
+More details about the project are below including how to build and run the Arc Store locally.
+
+---
+
 ## Project layout
 
 ```
@@ -97,3 +132,7 @@ kubectl logs -f deployment/arc-load-generator -n arc-store
 |--------|---------------|-------------------------------------------|-------------------|
 | GET    | /api/products | —                                         | List all products |
 | POST   | /api/orders   | `{ productId, quantity, shippingState }`  | Place an order    |
+
+---
+
+## [🛒🤖 Start the AI bug investigation here!](https://joshdynatrace.github.io/dtctl-ai-bug-demo/)
