@@ -23,7 +23,7 @@ In your Dynatrace tenant, make sure the [Live Debugger](https://docs.dynatrace.c
 
 ### Configure OpenPipeline
 
-Create an OpenPipeline processing rule that matches error events from the `arc-store` namespace or thea arc-backend container and creates a Davis ERROR_EVENT.
+Create a new Pipeline using a DQL Processor. Create a matching condition that matches error events from the `arc-store` namespace or thea arc-backend container and creates a Davis ERROR_EVENT.
 
 For example:
 ```bash
@@ -31,6 +31,12 @@ matchesPhrase(k8s.container.name, "arc-backend")
 and
 matchesPhrase(content, "NullPointerException")
 ```
+
+Use a DQL processor defition like `fieldsAdd alertme = "true"`.
+
+Create a Davis event matching the `alertme == "true"` with event.type = `ERROR_EVENT`.
+
+Finally create a `Dynamic Route` with the same matching condition from above that triggers the pipeline you just created.
 
 ### Create a Workflow
 
