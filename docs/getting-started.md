@@ -8,7 +8,7 @@ This guide walks you through everything needed to run the Arc Store agentic debu
 
 The following will be used:
 
-- A **Dynatrace tenant** with Live Debugger enabled
+- A **Dynatrace environment** with Live Debugger enabled
 - A **Dynatrace Platfom Token** with scopes as defined below
 - A **Dynatrace API Token** for event ingest
 - An **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com/){target=_blank}
@@ -64,6 +64,8 @@ Go to **Repo Settings → Secrets and variables → Actions** and add the follow
 | `DT_PLATFORM_TOKEN` | Dynatrace Platform token for dtctl — see scopes below |
 | `DT_API_TOKEN` | Dynatrace API token for the Events ingest API (`/api/v2/events/ingest`) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude Agent SDK |
+
+You can generate your API key from the Access Tokens app within your Dynatrace environment. Your DT_API_TOKEN should have the `Read events` and `Ingest events` scopes.
 
 ### DT_PLATFORM_TOKEN Scopes
 

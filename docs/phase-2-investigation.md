@@ -110,7 +110,7 @@ dtctl query fetch application.snapshots | sort timestamp desc | limit 5 --decode
 The snapshot shows Claude the actual value of every variable at that point in execution — for example, confirming that `taxResponse.getCategory()` returned `null` when the tax service omitted the field.
 
 !!! tip "Where to look"
-    Navigate to **Live Debugger** in your Dynatrace tenant. While the agent is running, you'll see the breakpoints it set listed here. After a snapshot is captured, you can inspect it directly in the Dynatrace UI alongside what the agent saw.
+    Navigate to **Live Debugger** in your Dynatrace environment. While the agent is running, you'll see the breakpoints it set listed here. After a snapshot is captured, you can inspect it directly in the Dynatrace UI alongside what the agent saw.
 
 ---
 

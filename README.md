@@ -13,7 +13,7 @@ Here are some short quickstart details to get going as you spin up the codespace
    > **Recommended:** 4-core machine (16 GB RAM) — the Kind cluster runs the full Arc Store stack inside the codespace.
 
    You'll need:
-   - A Dynatrace **Environment ID** — the subdomain from your tenant URL, e.g. `abc12345` from `https://abc12345.live.dynatrace.com`
+   - A Dynatrace **Environment ID** — the subdomain from your environment URL, e.g. `abc12345` from `https://abc12345.live.dynatrace.com`
    - A Dynatrace **Environment Type** — typically `live` (or `sprint` / `dev`)
    - A Dynatrace **Operator Token** (`DT_API_TOKEN`) — used by the Dynatrace Operator to manage the lifecycle of all Dynatrace components in the cluster
    - A Dynatrace **Data Ingest Token** (`DT_DATA_INGEST_TOKEN`) with the following scopes:

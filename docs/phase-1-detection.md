@@ -36,7 +36,7 @@ The Problem record captures:
 - Relevant error logs
 
 !!! tip "Where to look"
-    Navigate to **Problems** in your Dynatrace tenant. When the demo is active, you'll see a problem for the Arc Store backend. Click into it to see the full problem timeline, affected entities, and root-cause hints.
+    Navigate to **Problems** in your Dynatrace environment. When the demo is active, you'll see a problem for the Arc Store backend. Click into it to see the full problem timeline, affected entities, and root-cause hints.
 
 ---
 
@@ -64,7 +64,7 @@ The workflow calls the GitHub Issues API to create an issue in this repository. 
 The workflow also posts a `CUSTOM_ANNOTATION` event back to the Dynatrace Problem record to log that the automated investigation has been triggered. This keeps the full timeline visible inside Dynatrace.
 
 !!! tip "Where to look"
-    Navigate to **Workflows** in your Dynatrace tenant and open the workflow. The execution history shows each run, the inputs passed (Problem ID, entity details), and whether the GitHub issue was created successfully.
+    Navigate to **Workflows** in your Dynatrace environment and open the workflow. The execution history shows each run, the inputs passed (Problem ID, entity details), and whether the GitHub issue was created successfully.
 
 ---
 

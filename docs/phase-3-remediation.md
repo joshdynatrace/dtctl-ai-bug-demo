@@ -60,7 +60,7 @@ The event payload links the GitHub PR directly to the Problem:
 ```
 
 !!! tip "Where to look"
-    Navigate to the **Problem** in your Dynatrace tenant. On the problem timeline, you'll see the annotation event appear with a direct link to the pull request.
+    Navigate to the **Problem** in your Dynatrace environment. On the problem timeline, you'll see the annotation event appear with a direct link to the pull request.
 
 ---
 

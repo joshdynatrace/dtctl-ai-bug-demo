@@ -18,7 +18,7 @@ Or simply delete your codespace is you started it that way.
 
 ### Dynatrace
 
-Deactivate or delete the API tokens you created in your Dynatrace tenant:
+Deactivate or delete the API tokens you created in your Dynatrace environment:
 
 - Navigate to **Settings → Integration → Dynatrace API**
 - Find the tokens named for this demo and delete or revoke them
