@@ -133,6 +133,14 @@ kubectl logs -f deployment/arc-load-generator -n arc-store
 | GET    | /api/products | —                                         | List all products |
 | POST   | /api/orders   | `{ productId, quantity, shippingState }`  | Place an order    |
 
+## Docs
+
+To deploy the docs:
+
+```bash
+mkdocs gh-deploy
+```
+
 ---
 
 ## [🛒🤖 Start the AI bug investigation here!](https://joshdynatrace.github.io/dtctl-ai-bug-demo/)
