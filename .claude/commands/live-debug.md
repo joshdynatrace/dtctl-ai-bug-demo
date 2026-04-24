@@ -1,3 +1,8 @@
+---
+name: live-debug
+description: Investigate a bug using the Dynatrace Live Debugger via dtctl — set breakpoints, capture snapshots, and produce a root-cause summary with concrete variable-value evidence. Use this skill whenever the user says "debug", "investigate", "set a breakpoint", "capture a snapshot", "live debugger", "use dtctl to debug", or asks to trace a runtime error in the running application.
+---
+
 Investigate a bug using the Dynatrace Live Debugger via dtctl.
 
 Target: $ARGUMENTS
