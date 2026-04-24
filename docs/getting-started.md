@@ -65,7 +65,7 @@ Go to **Repo Settings → Secrets and variables → Actions** and add the follow
 | `DT_API_TOKEN` | Dynatrace API token for the Events ingest API (`/api/v2/events/ingest`) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude Agent SDK |
 
-You can generate your API key from the Access Tokens app within your Dynatrace environment. Your DT_API_TOKEN should have the `Read events` and `Ingest events` scopes.
+You can generate your API token from the Access Tokens app within your Dynatrace environment. Your DT_API_TOKEN should have the `Read events` and `Ingest events` scopes.
 
 ### DT_PLATFORM_TOKEN Scopes
 
