@@ -23,7 +23,7 @@ In your Dynatrace tenant, make sure the [Live Debugger](https://docs.dynatrace.c
 
 ### Configure OpenPipeline
 
-Create a new Pipeline using a DQL Processor. Create a matching condition that matches error events from the `arc-store` namespace or thea arc-backend container and creates a Davis ERROR_EVENT.
+Create a new Pipeline using a DQL Processor. Create a matching condition that matches error events from the `arc-store` namespace or the arc-backend container.
 
 For example:
 ```bash
