@@ -872,7 +872,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <h3 id="enable-live-debugger">Enable Live Debugger<a class="headerlink" href="#enable-live-debugger" title="Permanent link">#</a></h3>
 <p>In your Dynatrace tenant, make sure the <a href="https://docs.dynatrace.com/docs/observe/application-observability/live-debugger">Live Debugger</a> is enabled.</p>
 <h3 id="configure-openpipeline">Configure OpenPipeline<a class="headerlink" href="#configure-openpipeline" title="Permanent link">#</a></h3>
-<p>Create a new Pipeline using a DQL Processor. Create a matching condition that matches error events from the <code>arc-store</code> namespace or thea arc-backend container and creates a Davis ERROR_EVENT.</p>
+<p>Create a new Pipeline using a DQL Processor. Create a matching condition that matches error events from the <code>arc-store</code> namespace or the arc-backend container.</p>
 <p>For example:
 <div class="highlight"><pre><span></span><code>matchesPhrase<span class="o">(</span>k8s.container.name,<span class="w"> </span><span class="s2">&quot;arc-backend&quot;</span><span class="o">)</span>
 and
