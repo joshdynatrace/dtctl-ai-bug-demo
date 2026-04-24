@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <p>The following will be used:</p>
 <ul>
-<li>A <strong>Dynatrace tenant</strong> with Live Debugger enabled</li>
+<li>A <strong>Dynatrace environment</strong> with Live Debugger enabled</li>
 <li>A <strong>Dynatrace Platfom Token</strong> with scopes as defined below</li>
 <li>A <strong>Dynatrace API Token</strong> for event ingest</li>
 <li>An <strong>Anthropic API key</strong> from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></li>
@@ -922,6 +922,7 @@ matchesPhrase<span class="o">(</span>content,<span class="w"> </span><span class
 </tr>
 </tbody>
 </table>
+<p>You can generate your API key from the Access Tokens app within your Dynatrace environment. Your DT_API_TOKEN should have the <code>Read events</code> and <code>Ingest events</code> scopes.</p>
 <h3 id="dt_platform_token-scopes">DT_PLATFORM_TOKEN Scopes<a class="headerlink" href="#dt_platform_token-scopes" title="Permanent link">#</a></h3>
 <p>Your platform token requires at least these scopes to allow dtctl to query logs, traces, and the Live Debugger:</p>
 <ul>
