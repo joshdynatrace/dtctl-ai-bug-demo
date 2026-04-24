@@ -9,8 +9,8 @@ This guide walks you through everything needed to run the Arc Store agentic debu
 The following will be used:
 
 - A **Dynatrace tenant** with Live Debugger enabled
-- A **Kubernetes cluster** — this guide uses [Kind](https://kind.sigs.k8s.io/){target=_blank} 
-- **kubectl** installed and configured in codespaces
+- A **Dynatrace Platfom Token** with scopes as defined below
+- A **Dynatrace API Token** for event ingest
 - An **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com/){target=_blank}
 
 ---

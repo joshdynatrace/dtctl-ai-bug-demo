@@ -21,7 +21,7 @@ When a customer places an order, the backend calls an external **tax service** t
 If the tax service returns a response with a missing or malformed `category` field — for example, when a product category is not found — the backend throws a `NullPointerException` while parsing the response. This propagates as an HTTP 500 error back to the frontend.
 
 !!! tip "Where to look"
-    Open the Arc Store at [http://localhost:3000](http://localhost:3000){target=_blank} and place a test order. If the tax service returns an unexpected response, you'll see a 500 error in the browser and in the `arc-backend` logs.
+    Open the Arc Store at http://localhost:3000 (or the URL of your codespaces host) and place a test order for the Arc Display item. In this case the tax service returns an unexpected response, you'll see a 500 error in the browser and in the `arc-backend` logs.
 
 ---
 
@@ -48,7 +48,7 @@ When the Problem is opened, a pre-configured **Dynatrace Workflow** fires automa
 
 A DQL query is used to collect relevant error logs for the GitHub issue that will be created.
 
-### 2. Create a GitHub Issue
+### 2. Creates a GitHub Issue
 
 The workflow calls the GitHub Issues API to create an issue in this repository. The issue is structured so the agent can parse it:
 
@@ -59,7 +59,7 @@ The workflow calls the GitHub Issues API to create an issue in this repository. 
     EventID: -7029478988662415020_1776449283806V2
     ```
 
-### 2. Post an Annotation Event
+### 3. Post an Annotation Event
 
 The workflow also posts a `CUSTOM_ANNOTATION` event back to the Dynatrace Problem record to log that the automated investigation has been triggered. This keeps the full timeline visible inside Dynatrace.
 
