@@ -2,10 +2,16 @@
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Hard ceiling on how long the agent subprocess may run before it's killed.
+# Set via env var so it can be tuned without a code change.
+SUBPROCESS_TIMEOUT = int(os.getenv("AGENT_SUBPROCESS_TIMEOUT", "1500"))  # 25 min
 
 from dynatrace_events import post_dynatrace_event
 from github_issues import build_completion_comment, build_start_comment, post_issue_comment
@@ -104,7 +110,8 @@ def run_agent_command(prompt_file_path):
     runner = SCRIPT_DIR / "agent_sdk_runner.py"
     trace_enabled = _env_flag("AGENT_TRACE", False)
     if trace_enabled:
-        # Stream stderr live so [agent-trace] events show up in GitHub Actions logs in real time.
+        # start_new_session=True puts the subprocess in its own process group so we
+        # can kill it and all of its Bash children together on timeout.
         proc = subprocess.Popen(
             [sys.executable, str(runner), prompt_file_path],
             stdout=subprocess.PIPE,
@@ -112,22 +119,53 @@ def run_agent_command(prompt_file_path):
             text=True,
             bufsize=1,
             cwd=str(SCRIPT_DIR),
+            start_new_session=True,
         )
+
+        # Drain stderr on a daemon thread so [agent-trace] events stream live
+        # without blocking the main thread that needs to call proc.wait().
         stderr_lines = []
-        if proc.stderr is not None:
+
+        def _drain_stderr():
             for line in proc.stderr:
                 stderr_lines.append(line)
-                print(line, end="", file=sys.stderr)
+                print(line, end="", file=sys.stderr, flush=True)
+
+        t = threading.Thread(target=_drain_stderr, daemon=True)
+        t.start()
+
+        try:
+            returncode = proc.wait(timeout=SUBPROCESS_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            print(
+                f"Agent subprocess timed out after {SUBPROCESS_TIMEOUT}s — killing process group",
+                file=sys.stderr,
+                flush=True,
+            )
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+            except Exception:
+                proc.kill()
+            returncode = proc.wait()
+
+        t.join(timeout=5)
         stdout_text = proc.stdout.read() if proc.stdout is not None else ""
-        returncode = proc.wait()
         stderr_text = "".join(stderr_lines).strip()
     else:
-        proc = subprocess.run(
-            [sys.executable, str(runner), prompt_file_path],
-            capture_output=True,
-            text=True,
-            cwd=str(SCRIPT_DIR),
-        )
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(runner), prompt_file_path],
+                capture_output=True,
+                text=True,
+                cwd=str(SCRIPT_DIR),
+                timeout=SUBPROCESS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exc:
+            return {
+                "ok": False,
+                "error": f"Agent subprocess timed out after {SUBPROCESS_TIMEOUT}s",
+                "result": _default_fix_plan(f"Timed out after {SUBPROCESS_TIMEOUT}s"),
+            }
         stdout_text = proc.stdout
         stderr_text = proc.stderr.strip()
         returncode = proc.returncode
