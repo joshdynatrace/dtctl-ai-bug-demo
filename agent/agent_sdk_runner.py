@@ -20,6 +20,8 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = SCRIPT_DIR / "output"
 DEFAULT_MODEL = "claude-sonnet-4-6"
+# Maximum number of agentic turns before the SDK forcibly stops the session.
+MAX_TURNS = 70
 
 
 def _env_flag(name, default=False):
@@ -125,7 +127,7 @@ async def _run(prompt_text, trace):
             allowed_tools=["Bash", "Read"],
             model=model,
             permission_mode="bypassPermissions",
-            max_turns=60,
+            max_turns=MAX_TURNS,
             cwd=str(SCRIPT_DIR.parent),
             include_partial_messages=include_partial,
         ),
