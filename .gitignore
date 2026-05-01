@@ -20,8 +20,7 @@
 agent/.env.local
 
 # Agent investigation artifacts
-agent/output/*
-!agent/output/.gitkeep
+agent/investigation_output/
 
 # Python
 __pycache__/

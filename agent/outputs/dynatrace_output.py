@@ -51,7 +51,7 @@ def post_dynatrace_event(
     props["github.issue.title"] = _safe_text(issue_ctx.issue_title, max_len=250)
     props["github.issue"] = issue_ctx.issue_url
     props["confidence"] = str(fix_plan.confidence)
-    props["root.cause"] = fix_plan.root_cause
+    props["root.cause"] = _safe_text(fix_plan.root_cause, max_len=4000)
     props["service"] = issue_ctx.service_name or "unknown-service"
 
     if pr_url:

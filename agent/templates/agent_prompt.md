@@ -17,6 +17,7 @@ Rules:
 8. Return strictly valid JSON matching the schema below.
 9. The full repository source code is already checked out in the current working directory. Read source files directly with `cat` or `Read` — do NOT fetch them via `gh api` or any remote call.
 10. Ignore the `load-generator` folder — it is not relevant for this investigation.
+11. Do NOT invoke any Skill or Claude Code command (e.g. do not call `live-debug` or any other skill). Use dtctl commands directly via Bash — this prompt already contains the full investigation playbook.
 
 Issue context:
 {{ISSUE_JSON}}

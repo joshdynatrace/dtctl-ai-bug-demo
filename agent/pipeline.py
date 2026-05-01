@@ -190,7 +190,10 @@ def _run_subprocess(prompt_file_path: str) -> dict:
 
         t.join(timeout=5)
         stdout_text = proc.stdout.read() if proc.stdout is not None else ""
-        stderr_text = "".join(stderr_lines).strip()
+        # Strip [agent-trace] lines so they don't pollute the error message on failure.
+        stderr_text = "\n".join(
+            l.rstrip() for l in stderr_lines if not l.startswith("[agent-trace]")
+        ).strip()
     else:
         try:
             proc = subprocess.run(
@@ -249,6 +252,8 @@ def run_investigation(issue_ctx: IssueContext, output_dir: Path, auto_pr: bool =
     cmd_result = _run_subprocess(str(prompt_path))
     fix_plan_dict = cmd_result.get("result") or FixPlan.failed("Empty result from runner").to_dict()
     fix_plan = FixPlan.from_dict(fix_plan_dict)
+    fix_plan.ok = cmd_result.get("ok", False)
+    fix_plan.error = cmd_result.get("error", "")
 
     investigation_result = {
         "started_at": started_at,
