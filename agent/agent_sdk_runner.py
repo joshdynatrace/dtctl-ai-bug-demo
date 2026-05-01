@@ -18,7 +18,7 @@ except ImportError:
     sys.exit(1)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = SCRIPT_DIR / "output"
+OUTPUT_DIR = SCRIPT_DIR / "investigation_output"
 DEFAULT_MODEL = "claude-sonnet-4-6"
 # Maximum number of agentic turns before the SDK forcibly stops the session.
 MAX_TURNS = 70
@@ -109,6 +109,8 @@ def _extract_text_from_tool_result(content):
 async def _run(prompt_text, trace):
     # Configure one agent session from env-driven runtime options.
     model = os.getenv("CLAUDE_MODEL", DEFAULT_MODEL)
+    tools = [t.strip() for t in os.getenv("AGENT_ALLOWED_TOOLS", "Bash,Read").split(",") if t.strip()]
+    cwd = os.getenv("AGENT_CWD", str(SCRIPT_DIR.parent))
     include_partial = _env_flag("AGENT_TRACE_INCLUDE_PARTIAL", False)
     result_text = None
 
@@ -116,7 +118,7 @@ async def _run(prompt_text, trace):
     trace.log(
         "session_start",
         model=model,
-        cwd=str(SCRIPT_DIR.parent),
+        cwd=cwd,
         include_partial_messages=include_partial,
     )
 
@@ -124,11 +126,11 @@ async def _run(prompt_text, trace):
     async for message in query(
         prompt=prompt_text,
         options=ClaudeAgentOptions(
-            allowed_tools=["Bash", "Read"],
+            allowed_tools=tools,
             model=model,
             permission_mode="bypassPermissions",
             max_turns=MAX_TURNS,
-            cwd=str(SCRIPT_DIR.parent),
+            cwd=cwd,
             include_partial_messages=include_partial,
         ),
     ):

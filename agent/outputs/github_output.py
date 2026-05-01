@@ -2,16 +2,15 @@ import os
 
 import requests
 
+from pipeline import FixPlan, IssueContext
 
-def post_issue_comment(issue_ctx, body):
-    repo = os.getenv("GITHUB_REPOSITORY")
+
+def post_issue_comment(issue_ctx: IssueContext, body: str) -> dict:
     token = os.getenv("GITHUB_TOKEN")
-    issue_number = issue_ctx.get("issue_number")
-
-    if not repo or not token or not issue_number:
+    if not issue_ctx.repo or not token or not issue_ctx.issue_number:
         return {"status": "skipped", "reason": "missing GitHub env or issue number"}
 
-    url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/comments"
+    url = f"https://api.github.com/repos/{issue_ctx.repo}/issues/{issue_ctx.issue_number}/comments"
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
@@ -20,22 +19,27 @@ def post_issue_comment(issue_ctx, body):
     return {"status": response.status_code, "response": response.text[:1000]}
 
 
-def build_start_comment(issue_ctx):
+def build_start_comment(issue_ctx: IssueContext) -> str:
     return (
         "AI investigation started.\n\n"
-        f"- Problem: {issue_ctx.get('problem_id')}\n"
-        f"- Issue: {issue_ctx.get('issue_url')}\n"
+        f"- Problem: {issue_ctx.problem_id}\n"
+        f"- Issue: {issue_ctx.issue_url}\n"
         "- Next steps: collect dtctl logs, capture Dynatrace Live Debugger evidence, propose fix, and update this issue.\n"
     )
 
 
-def build_completion_comment(issue_ctx, fix_plan, pr_info, evidence_summary):
+def build_completion_comment(
+    issue_ctx: IssueContext,
+    fix_plan: FixPlan,
+    pr_info: dict,
+    evidence_summary: dict,
+) -> str:
     lines = [
         "AI investigation completed.",
         "",
-        f"- Problem: {issue_ctx.get('problem_id')}",
-        f"- Root cause: {fix_plan.get('root_cause')}",
-        f"- Confidence: {fix_plan.get('confidence')}",
+        f"- Problem: {issue_ctx.problem_id}",
+        f"- Root cause: {fix_plan.root_cause}",
+        f"- Confidence: {fix_plan.confidence}",
         f"- PR: {pr_info.get('pr_url', 'not created')}",
         f"- Evidence queries collected: {evidence_summary.get('query_count')}",
         f"- Live Debugger commands run: {evidence_summary.get('debugger_count')}",

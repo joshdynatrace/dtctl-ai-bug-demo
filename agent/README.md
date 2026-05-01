@@ -13,20 +13,25 @@ When a matching GitHub issue is created, the workflow:
 5. Persists prompt/results artifacts and a final fix plan.
 6. Posts a completion comment with evidence summary.
 7. Sends a Dynatrace event update attached to the same problem ID.
-8. Uploads artifacts from `agent/output/`.
+8. Uploads artifacts from `agent/investigation_output/`.
 
 ## Key Files
 
 - `agent/orchestrator.py`
-  - Main pipeline coordinator.
-  - Handles issue intake, prompt rendering, comments, agent handoff, and summary artifacts.
+  - Thin wiring layer: loads the trigger, runs the investigation, calls the output handlers, and persists artifacts.
+- `agent/pipeline.py`
+  - Pure investigation logic. Defines `IssueContext` and `FixPlan` dataclasses, renders the agent prompt, manages the agent subprocess, and summarizes evidence. No GitHub or Dynatrace awareness.
 - `agent/agent_sdk_runner.py`
   - Invokes Claude Agent SDK with Bash tool execution.
   - Claude can run `dtctl` commands interactively and collect evidence.
   - Outputs JSON result to stdout.
-- `agent/github_issues.py`
-  - GitHub issue comment helpers.
-- `agent/dynatrace_events.py`
+- `agent/triggers/github_trigger.py`
+  - Parses a GitHub Actions event payload into an `IssueContext`. **Swap this file to use a different trigger source** (PagerDuty, Slack, Dynatrace workflow webhook, etc.).
+- `agent/triggers/generic_trigger.py`
+  - Alternative trigger that reads `IssueContext` from JSON on stdin or environment variables — useful for non-GitHub integrations and local testing.
+- `agent/outputs/github_output.py`
+  - GitHub issue comment helpers (start comment, completion comment).
+- `agent/outputs/dynatrace_output.py`
   - Dynatrace Events API payload assembly + send.
 - `agent/templates/agent_prompt.md`
   - Investigation instructions for the agent.
@@ -118,6 +123,10 @@ Useful optional runtime environment variables:
   - Output path for structured trace events.
 - `AGENT_TRACE_INCLUDE_PARTIAL`
   - Includes partial streaming events from the SDK when enabled.
+- `AGENT_ALLOWED_TOOLS`
+  - Comma-separated list of tools the agent may use. Defaults to `Bash,Read`. Override to restrict or extend access (e.g. `Read` for a read-only investigation).
+- `AGENT_CWD`
+  - Working directory for the agent subprocess. Defaults to the repository root.
 - `EVIDENCE_EXCERPT_MAX_LEN`
   - Maximum length of evidence excerpts included in the GitHub completion comment.
 
@@ -139,7 +148,7 @@ Configured in `.github/workflows/dynatrace-agent-investigation.yml`:
 The orchestrator invokes `agent/agent_sdk_runner.py`, which:
 
 1. Takes a rendered prompt file path as argument.
-2. Uses Claude Agent SDK to create an interactive session with `allowed_tools=["Bash", "Read"]`.
+2. Uses Claude Agent SDK to create an interactive session with tools configured by `AGENT_ALLOWED_TOOLS` (defaults to `Bash,Read`).
 3. Claude can execute `dtctl` and other commands, iterate based on output.
 4. Parses the final text output for a JSON object.
 5. Outputs only JSON to stdout (compatible with orchestrator parsing).
@@ -169,7 +178,7 @@ If the runner fails or returns invalid JSON, the orchestrator falls back to a pl
 
 ## Runtime Artifacts
 
-The orchestrator writes outputs into `agent/output/`:
+The orchestrator writes outputs into `agent/investigation_output/`:
 
 - `issue_context.json`
 - `issue_start_comment_result.json`
@@ -201,17 +210,17 @@ This script:
 2. Fetches GitHub issue #8 from the repo.
 3. Sets up environment variables from `.env.local` (copy from `.env.local.example` and fill in your secrets).
 4. Runs the orchestrator.
-5. Outputs artifacts to `agent/output/`.
+5. Outputs artifacts to `agent/investigation_output/`.
 
 By default, local runs now enable agent tracing:
 
 - `AGENT_TRACE=true`
-- `AGENT_TRACE_FILE=agent/output/agent_trace.jsonl`
+- `AGENT_TRACE_FILE=agent/investigation_output/agent_trace.jsonl`
 
 This gives two views of agent behavior:
 
 1. Live trace lines in terminal stderr (`[agent-trace] ...`) showing tool uses/results and system events.
-2. Structured JSONL trace in `agent/output/agent_trace.jsonl` for post-run inspection.
+2. Structured JSONL trace in `agent/investigation_output/agent_trace.jsonl` for post-run inspection.
 
 Manual setup (if you prefer):
 
@@ -225,7 +234,7 @@ export GITHUB_REPOSITORY="owner/repo"
 export GITHUB_EVENT_PATH="/path/to/issue-event.json"
 export ANTHROPIC_API_KEY="sk-ant-xxx"
 export AGENT_TRACE="true"
-export AGENT_TRACE_FILE="agent/output/agent_trace.jsonl"
+export AGENT_TRACE_FILE="agent/investigation_output/agent_trace.jsonl"
 python agent/orchestrator.py
 ```
 
@@ -241,6 +250,6 @@ python agent/orchestrator.py
   - Ensure `ANTHROPIC_API_KEY` is set and valid.
   - Check that `claude-agent-sdk` is installed: `pip install claude-agent-sdk`.
   - Review live `[agent-trace]` stderr output during the run.
-  - Review `agent/output/agent_trace.jsonl` after the run when tracing is enabled.
+  - Review `agent/investigation_output/agent_trace.jsonl` after the run when tracing is enabled.
 - Event not attached to problem
-  - Confirm extracted problem ID is present in `agent/output/issue_context.json` and in `dynatrace_event_result.json` payload properties.
+  - Confirm extracted problem ID is present in `agent/investigation_output/issue_context.json` and in `dynatrace_event_result.json` payload properties.

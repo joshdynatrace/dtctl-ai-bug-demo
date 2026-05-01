@@ -66,7 +66,7 @@ The event payload links the GitHub PR directly to the Problem:
 
 ## Investigation Artifacts
 
-All outputs from the pipeline are saved to `agent/output/` and uploaded as a GitHub Actions artifact named `agent-evidence-<run-id>`:
+All outputs from the pipeline are saved to `agent/investigation_output/` and uploaded as a GitHub Actions artifact named `agent-evidence-<run-id>`:
 
 | File | Contents |
 |------|----------|

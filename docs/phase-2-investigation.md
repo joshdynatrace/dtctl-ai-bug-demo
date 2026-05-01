@@ -37,7 +37,7 @@ The first thing the workflow runs is `agent/orchestrator.py` — the main pipeli
 | **4. Create PR** | Open a fix branch and pull request (when `AUTO_PR=true`) |
 | **5. Report** | Post a completion comment with evidence summary |
 | **6. Update Dynatrace** | Send a `CUSTOM_ANNOTATION` event back to the Problem |
-| **7. Finalize** | Persist all artifacts to `agent/output/` |
+| **7. Finalize** | Persist all artifacts to `agent/investigation_output/` |
 
 The orchestrator also renders the investigation prompt from `agent/templates/agent_prompt.md`, injecting the issue details and Problem ID before passing it to Claude.
 

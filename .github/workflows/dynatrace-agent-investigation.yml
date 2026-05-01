@@ -83,4 +83,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: agent-evidence-${{ github.run_id }}
-          path: agent/output/
+          path: agent/investigation_output/
