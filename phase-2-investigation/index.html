@@ -897,15 +897,15 @@ document.addEventListener('DOMContentLoaded', function() {
 </tr>
 <tr>
 <td><strong>7. Finalize</strong></td>
-<td>Persist all artifacts to <code>agent/output/</code></td>
+<td>Persist all artifacts to <code>agent/investigation_output/</code></td>
 </tr>
 </tbody>
 </table>
-<p>The orchestrator also renders the investigation prompt from <code>agent/templates/agent_prompt.md</code>, injecting the issue details and Problem ID before passing it to Claude.</p>
+<p>The investigation prompt is rendered from <code>agent/templates/agent_prompt.md</code> by <code>agent/pipeline.py</code>, which injects the issue details and Problem ID before passing it to Claude.</p>
 <hr />
 <h2 id="claude-code-agent">Claude Code Agent<a class="headerlink" href="#claude-code-agent" title="Permanent link">#</a></h2>
 <p>The orchestrator invokes <code>agent/agent_sdk_runner.py</code>, which creates an interactive Claude Code session using the <strong>Anthropic Agent SDK</strong>.</p>
-<p>Claude receives the investigation prompt and is given access to <strong>Bash</strong> and <strong>Read</strong> tools — meaning it can actually execute <code>dtctl</code> commands, read files, and iterate based on what it finds. This is an agentic loop, not a single-shot prompt.</p>
+<p>Claude receives the investigation prompt and runs in <code>bypassPermissions</code> mode, giving it access to the full Claude Code toolset — meaning it can execute <code>dtctl</code> commands, read and edit files, and iterate based on what it finds. This is an agentic loop, not a single-shot prompt.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_sdk_runner.py — simplified</span>
 <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="n">prompt</span><span class="o">=</span><span class="n">rendered_prompt</span><span class="p">,</span>
