@@ -39,7 +39,7 @@ The first thing the workflow runs is `agent/orchestrator.py` — the main pipeli
 | **6. Update Dynatrace** | Send a `CUSTOM_ANNOTATION` event back to the Problem |
 | **7. Finalize** | Persist all artifacts to `agent/investigation_output/` |
 
-The orchestrator also renders the investigation prompt from `agent/templates/agent_prompt.md`, injecting the issue details and Problem ID before passing it to Claude.
+The investigation prompt is rendered from `agent/templates/agent_prompt.md` by `agent/pipeline.py`, which injects the issue details and Problem ID before passing it to Claude.
 
 ---
 
@@ -47,7 +47,7 @@ The orchestrator also renders the investigation prompt from `agent/templates/age
 
 The orchestrator invokes `agent/agent_sdk_runner.py`, which creates an interactive Claude Code session using the **Anthropic Agent SDK**.
 
-Claude receives the investigation prompt and is given access to **Bash** and **Read** tools — meaning it can actually execute `dtctl` commands, read files, and iterate based on what it finds. This is an agentic loop, not a single-shot prompt.
+Claude receives the investigation prompt and runs in `bypassPermissions` mode, giving it access to the full Claude Code toolset — meaning it can execute `dtctl` commands, read and edit files, and iterate based on what it finds. This is an agentic loop, not a single-shot prompt.
 
 ```python
 # agent_sdk_runner.py — simplified
