@@ -73,9 +73,10 @@ Your platform token requires at least these scopes to allow dtctl to query logs,
 
 - `storage:logs:read`
 - `storage:metrics:read`
-- `storage:traces:read`
+- `storage:spans:read`
 - `dev-obs:breakpoints:set`
 - `storage:application.snapshots:read`
+- `storage:buckets:read`
 
 See the full list at [dtctl token-scope docs](https://dynatrace-oss.github.io/dtctl/docs/token-scopes){target=_blank}.
 
