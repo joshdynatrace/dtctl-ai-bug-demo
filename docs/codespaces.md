@@ -30,6 +30,8 @@ Click the badge below to open a new Codespace from the `main` branch:
     | `DT_API_TOKEN` | Dynatrace Operator token — used to manage Dynatrace components in the Kubernetes cluster |
     | `DT_DATA_INGEST_TOKEN` | Dynatrace data ingest token — used to send logs, metrics, and traces |
 
+One way to generate the DT_API_TOKEN and DT_DATA_INGEST_TOKEN with the right scopes is to to to the Kubernetes App > Add Cluster > Other Distributions > Under Install Dynatrace Operator generate the Operator token (API Token) and the Data Ingest Token.
+
 ---
 
 ## 3. What Gets Deployed
